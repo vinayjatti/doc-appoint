@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Grid, IconButton, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Snackbar, TextField, Typography } from "@mui/material";
 import React, { useRef, useState } from "react";
 import { Autocomplete, GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import { REACT_APP_GOOGLE_MAP_API_KEY } from "../../utils/constants";
@@ -25,6 +25,11 @@ export const Doctor: React.FC = () => {
     });
 
     const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: "",
+        severity: "success" as "success" | "error",
+    });
     const mapRef = useRef<google.maps.Map | null>(null);
 
     const handlePlaceChanged = () => {
@@ -53,6 +58,7 @@ export const Doctor: React.FC = () => {
         clinicName: "",
         latitude: "",
         longitude: "",
+        bookingSlotsType: "number",
         location: { lat: 12.9716, lng: 77.5946 },
         clinicAddress: "",
         clinicGeoLocation: "",
@@ -71,7 +77,7 @@ export const Doctor: React.FC = () => {
     const [errorMsg, setErrorMsg] = useState("");
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
     ) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
@@ -142,6 +148,7 @@ export const Doctor: React.FC = () => {
                     role: "doctor",
                     latitude: "",
                     longitude: "",
+                    bookingSlotsType: "number",
                     specialization: "",
                     clinicName: "",
                     location: { lat: 12.9716, lng: 77.5946 },
@@ -157,13 +164,28 @@ export const Doctor: React.FC = () => {
                         { day: "Sunday", slots: [] },
                     ],
                 });
-                setSuccessMsg("Doctor record created successfully!");
+                setSnackbar({
+                        open: true,
+                        message: "Doctor record created successfully!",
+                        severity: "success",
+                    });
+                 
             } else {
                 setErrorMsg(data.message || "Failed to create doctor");
+                setSnackbar({
+                        open: true,
+                        message: data.message || "Failed to create doctor",
+                        severity: "error",
+                    });
             }
         } catch (err) {
             console.error(err);
             setErrorMsg("Server error. Please try again later.");
+            setSnackbar({
+                        open: true,
+                        message:  "Failed to create doctor",
+                        severity: "error",
+                    });
         }
     };
 
@@ -179,7 +201,19 @@ export const Doctor: React.FC = () => {
             <TextField label="specialization" name="specialization" value={form.specialization} onChange={handleChange} fullWidth margin="normal" />
             <TextField label="Clinic Name" name="clinicName" value={form.clinicName} onChange={handleChange} fullWidth margin="normal" />
             <TextField label="Clinic Address" name="clinicAddress" value={form.clinicAddress} onChange={handleChange} fullWidth margin="normal" />
-            
+            <FormControl fullWidth margin="normal">
+                <InputLabel id="booking-type-label">Booking Type</InputLabel>
+                <Select
+                    labelId="booking-type-label"
+                    name="bookingSlotType"
+                    value={form.bookingSlotsType || ""}
+                    label="Booking Type"
+                    onChange={handleChange}
+                >
+                    <MenuItem value="slots">Slot Based (Time)</MenuItem>
+                    <MenuItem value="number">Queue Based (Token)</MenuItem>
+                </Select>
+            </FormControl>
             <Box sx={{ mt: 2 }}>
                 <strong>Select Clinic GEO Location:</strong>
 
@@ -254,6 +288,16 @@ export const Doctor: React.FC = () => {
             <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }} onClick={handleSubmit}>
                 Submit Request
             </Button>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }   

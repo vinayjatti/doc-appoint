@@ -8,6 +8,7 @@ export interface IUser extends Document {
   specialization: string;
   clinicName: string;
   clinicAddress: string;
+  bookingSlotsType: "slots" | "number"
   availability?: Array<{
     day: string; // e.g., "Monday"
     slots: Array<{
@@ -29,6 +30,7 @@ const userSchema = new Schema<IUser>(
     role: { type: String, enum: ["doctor", "admin"], required: true },
     email: { type: String, unique: true, sparse: true },
     phone: { type: String, unique: true, required: true },
+    bookingSlotsType: { type: String, enum: ["slots", "number"], default: "slots" },
     specialization: { type: String },
     clinicAddress: { type: String },
     clinicName: { type: String },

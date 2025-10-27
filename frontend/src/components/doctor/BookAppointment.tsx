@@ -50,6 +50,7 @@ export const BookAppointment: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
     const [openDialog, setOpenDialog] = useState(false);
     const [patientName, setPatientName] = useState("");
+    const [patientNumber, setPatientNumber] = useState("");
 
     // Generate fixed slots for morning to evening (9 AM - 6 PM)
     const dailySlots = generateSlots(9, 18, 30); // every 30 mins
@@ -90,7 +91,7 @@ export const BookAppointment: React.FC = () => {
     };
 
     const handleConfirmBooking = async () => {
-        if (!selectedSlot || !selectedDate || !patientName) return alert("Please fill all details");
+        if (doctor.bookingSlotsType === "slots" && !selectedSlot || !selectedDate || !patientName) return alert("Please fill all details");
 
         try {
             setLoading(true);
@@ -100,23 +101,35 @@ export const BookAppointment: React.FC = () => {
                 body: JSON.stringify({
                     doctorId,
                     patientName,
+                    patientNumber,
                     appointmentDate: selectedDate.format("YYYY-MM-DD"),
                     slot: selectedSlot,
                     paymentStatus: "pending",
                 }),
             });
 
+            let data: any = {};
+            try {
+                const text = await res.text();
+                data = text ? JSON.parse(text) : {};
+            } catch {
+                data = {}; // non-JSON or empty response
+            }
+
             if (!res.ok) {
-                const errData = await res.json();
-                alert(errData.message || "Failed to book slot");
+                setError(data.message || "Failed to book appointment");
             } else {
-                alert("Appointment booked successfully!");
+                setSuccess(true);
                 setOpenDialog(false);
+                setPatientName("");
+                setPatientNumber("");
+                setSelectedSlot("");
                 const date = selectedDate.toISOString().split("T")[0];
                 fetchDoctorDetails(doctorId, date);
             }
         } catch (err) {
             console.error("Booking error:", err);
+            setError("Something went wrong while booking. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -156,41 +169,47 @@ export const BookAppointment: React.FC = () => {
             </Box>
 
             {/* Slot Selection */}
-            <Typography variant="h6" gutterBottom>
-                Select a Time Slot (Today)
-            </Typography>
+            {
+                doctor.bookingSlotsType === "slots" && (
+                    <Box>
+                        <Typography variant="h6" gutterBottom>
+                            Select a Time Slot (Today)
+                        </Typography>
 
-            <RadioGroup value={selectedSlot} onChange={(e) => setSelectedSlot(e.target.value)}>
-                <Grid container spacing={2}>
-                    {dailySlots.map((slot, idx) => {
-                        const isBooked = bookedSlots.includes(slot);
-                        return (
-                            <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
-                                <Button
-                                    variant={isBooked ? "outlined" : selectedSlot === slot ? "contained" : "outlined"}
-                                    color={isBooked ? "error" : "primary"}
-                                    fullWidth
-                                    disabled={isBooked}
-                                    onClick={() => !isBooked && setSelectedSlot(slot)}
-                                    sx={{
-                                        textTransform: "none",
-                                        fontWeight: isBooked ? 400 : 500,
-                                        borderRadius: 2,
-                                    }}
-                                >
-                                    {slot} {isBooked ? "(Booked)" : ""}
-                                </Button>
+                        <RadioGroup value={selectedSlot} onChange={(e) => setSelectedSlot(e.target.value)}>
+                            <Grid container spacing={2}>
+                                {dailySlots.map((slot, idx) => {
+                                    const isBooked = bookedSlots.includes(slot);
+                                    return (
+                                        <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
+                                            <Button
+                                                variant={isBooked ? "outlined" : selectedSlot === slot ? "contained" : "outlined"}
+                                                color={isBooked ? "error" : "primary"}
+                                                fullWidth
+                                                disabled={isBooked}
+                                                onClick={() => !isBooked && setSelectedSlot(slot)}
+                                                sx={{
+                                                    textTransform: "none",
+                                                    fontWeight: isBooked ? 400 : 500,
+                                                    borderRadius: 2,
+                                                }}
+                                            >
+                                                {slot} {isBooked ? "(Booked)" : ""}
+                                            </Button>
+                                        </Grid>
+                                    );
+                                })}
                             </Grid>
-                        );
-                    })}
-                </Grid>
-            </RadioGroup>
+                        </RadioGroup>
+                    </Box>)
+
+            }
 
             <Box sx={{ mt: 3 }}>
                 <Button
                     variant="contained"
                     color="primary"
-                    disabled={!selectedSlot}
+                    disabled={(doctor.bookingSlotsType === "slots" && !selectedSlot)}
                     onClick={() => setOpenDialog(true)}
                 >
                     Proceed to Book
@@ -222,6 +241,13 @@ export const BookAppointment: React.FC = () => {
                         label="Patient Name"
                         value={patientName}
                         onChange={(e) => setPatientName(e.target.value)}
+                    />
+                    <p></p>
+                    <TextField
+                        fullWidth
+                        label="Patient Mobile Number"
+                        value={patientNumber}
+                        onChange={(e) => setPatientNumber(e.target.value)}
                     />
                 </DialogContent>
                 <DialogActions>

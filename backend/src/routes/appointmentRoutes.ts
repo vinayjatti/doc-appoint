@@ -12,38 +12,116 @@ const router = Router();
  */
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { doctorId, patientName, appointmentDate, slot, paymentStatus } = req.body;
-
-    if (!doctorId || !patientName || !appointmentDate || !slot) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    // Check if slot is already booked
-    const existing = await Appointment.findOne({
-      doctorId,
-      appointmentDate,
-      slot,
-      status: { $ne: "cancelled" },
-    });
-
-    if (existing) {
-      return res.status(409).json({ message: "Slot already booked" });
-    }
-
-    const newAppointment = new Appointment({
+    const {
       doctorId,
       patientName,
       appointmentDate,
       slot,
+      paymentStatus,
+      patientNumber,
+      bookingSlotsType, // ✅ Added to handle logic based on type
+    } = req.body;
+
+    if (!doctorId || !patientName || !appointmentDate || !patientNumber) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Convert appointmentDate to date range
+    const startOfDay = new Date(appointmentDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(appointmentDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // ✅ Check if appointment already exists (based on type)
+    let existing;
+    console.log("Booking Slots Type:", bookingSlotsType);
+    if (bookingSlotsType !== "number") {
+      // Slot-based: must check slot + other identifiers
+      existing = await Appointment.findOne({
+        doctorId,
+        appointmentDate: { $gte: startOfDay, $lte: endOfDay },
+        slot,
+        patientName,
+        patientNumber,
+        status: { $ne: "cancelled" },
+      });
+    } else {
+      // Queue-based: only check doctor + patient + date
+      existing = await Appointment.findOne({
+        doctorId,
+        appointmentDate: { $gte: startOfDay, $lte: endOfDay },
+        patientName,
+        patientNumber,
+        status: { $ne: "cancelled" },
+      });
+    }
+
+    if (existing) {
+      return res.status(409).json({
+        message:
+          bookingSlotsType === "slot"
+            ? "This slot is already booked for this patient"
+            : "This patient is already registered for the selected date",
+      });
+    }
+
+    // ✅ Get current max queue number for that doctor/date
+    const latestAppointment = await Appointment.findOne({
+      doctorId,
+      appointmentDate: { $gte: startOfDay, $lte: endOfDay },
+    })
+      .sort({ patientQueueNumber: -1 })
+      .limit(1);
+
+    let nextQueueNumber = 1;
+    if (
+      latestAppointment &&
+      typeof latestAppointment.patientQueueNumber === "number" &&
+      !isNaN(latestAppointment.patientQueueNumber)
+    ) {
+      nextQueueNumber = latestAppointment.patientQueueNumber + 1;
+    }
+
+    // ✅ Create new appointment
+    const newAppointment = new Appointment({
+      doctorId,
+      patientName,
+      patientNumber,
+      appointmentDate,
+      slot: bookingSlotsType !== "number" ? slot : undefined  , // only for slot-based
       paymentStatus: paymentStatus || "pending",
+      patientQueueNumber: nextQueueNumber,
     });
 
     await newAppointment.save();
-    res.status(201).json(newAppointment);
+
+    res.status(201).json({
+      message: "Appointment booked successfully",
+      appointment: newAppointment,
+    });
   } catch (err) {
     console.error("Error booking appointment:", err);
     res.status(500).json({ error: "Failed to book appointment" });
   }
+});
+
+router.get("/", async (req, res) => {
+  const { doctorId, date } = req.query;
+
+  if (!doctorId || !date || typeof date !== "string") {
+      return res.status(400).json({ message: "doctorId and date are required" });
+    }
+
+  const start = new Date(date as string);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(date as string);
+  end.setHours(23, 59, 59, 999);
+
+  const appointments = await Appointment.find({
+    doctorId,
+    appointmentDate: { $gte: start, $lte: end },
+  });
+  res.json({ appointments });
 });
 
 router.get("/doctor/:id", async (req: Request, res: Response) => {

@@ -14,6 +14,7 @@ router.post("/user/create", async (req: Request, res: Response) => {
       email,
       longitude,
       latitude,
+      bookingSlotsType,
       specialization,
       clinicName,
       clinicAddress,
@@ -43,6 +44,7 @@ router.post("/user/create", async (req: Request, res: Response) => {
       specialization,
       clinicName,
       clinicAddress,
+      bookingSlotsType,
       meta: { clinicName },
       availability: Array.isArray(availability) ? availability : [],
       location: {
@@ -117,6 +119,22 @@ router.get("/user/:id", async (req, res) => {
     res.json(doctor);
   } catch (err) {
     res.status(500).json({ error: "Error fetching doctor" });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) return res.status(400).json({ message: "Name is required" });
+
+    // Case-insensitive *partial* match
+    const doctor = await User.findOne({ name: new RegExp(name as string, "i") });
+
+    if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+    res.json({ doctor });
+  } catch (err) {
+    console.error("Error fetching doctor:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

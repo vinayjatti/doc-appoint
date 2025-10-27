@@ -24,6 +24,7 @@ import { SearchDoctor } from "./components/doctor/SearchDoctor";
 import logo from "./assets/medichamp.png"
 import { SearchPharmacy } from "./components/doctor/SearchPharmacy";
 import { BookAppointment } from "./components/doctor/BookAppointment";
+import MyAppointments from "./components/doctor/MyAppointments";
 
 const App: React.FC = () => {
   const [open, setOpen] = React.useState(false);
@@ -144,7 +145,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path="/doctors" element={<Doctor />} />
-              <Route path="/appointments" element={<Appointments />} />
+              <Route path="/appointments" element={<MyAppointments />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/searchDoctor" element={<SearchDoctor />} />
               <Route path="/searchPharmacy" element={<SearchPharmacy />} />
