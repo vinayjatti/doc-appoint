@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import { Autocomplete, GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import { REACT_APP_GOOGLE_MAP_API_KEY } from "../../utils/constants";
 import { Add, Remove } from "@mui/icons-material";
+import WeeklyAvailabilityAccordion from "./WeeklyAvailabilityAccordion";
 
 
 
@@ -30,6 +31,7 @@ export const Doctor: React.FC = () => {
         message: "",
         severity: "success" as "success" | "error",
     });
+    const [step, setStep] = useState(1);
     const mapRef = useRef<google.maps.Map | null>(null);
 
     const handlePlaceChanged = () => {
@@ -194,9 +196,12 @@ export const Doctor: React.FC = () => {
 
     return (
         <Box sx={{ p: 3, maxWidth: 500, mx: "auto" }}>
-            <h2>Create Doctor Record</h2>
+            {step === 1 && (
+                <>
+                <h2>Create Doctor Record</h2>
             <TextField label="Name" name="name" value={form.name} onChange={handleChange} fullWidth margin="normal" />
             <TextField label="Email" name="email" value={form.email} onChange={handleChange} fullWidth margin="normal" />
+            
             <TextField label="Phone" name="phone" value={form.phone} onChange={handleChange} fullWidth margin="normal" />
             <TextField label="specialization" name="specialization" value={form.specialization} onChange={handleChange} fullWidth margin="normal" />
             <TextField label="Clinic Name" name="clinicName" value={form.clinicName} onChange={handleChange} fullWidth margin="normal" />
@@ -240,50 +245,17 @@ export const Doctor: React.FC = () => {
                 </GoogleMap>
 
                 {/* ✅ Show coordinates */}
-                <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 2 }} style={{ display: "none", gap: "1rem" }}>
                     <TextField label="Latitude" value={form.location.lat} fullWidth InputProps={{ readOnly: true }} margin="dense" />
                     <TextField label="Longitude" value={form.location.lng} fullWidth InputProps={{ readOnly: true }} margin="dense" />
                 </Box>
             </Box>
-
-            <Box sx={{ mt: 3 }}>
-                <Typography variant="h6">Set Weekly Availability</Typography>
-                {form.availability.map((day, dayIndex) => (
-                    <Box key={day.day} sx={{ mb: 2, border: "1px solid #ccc", p: 2, borderRadius: 2 }}>
-                        <Typography variant="subtitle1">{day.day}</Typography>
-                        {day.slots.map((slot, slotIndex) => (
-                            <Grid container spacing={1} alignItems="center" key={slotIndex} sx={{ mb: 1 }}>
-                                <Grid size={{ xs: 5 }}>
-                                    <TextField
-                                        type="time"
-                                        label="Start"
-                                        value={slot.start}
-                                        fullWidth
-                                        onChange={(e) => handleSlotChange(dayIndex, slotIndex, "start", e.target.value)}
-                                    />
-                                </Grid>
-                                <Grid size={{ xs: 5 }}>
-                                    <TextField
-                                        type="time"
-                                        label="End"
-                                        value={slot.end}
-                                        fullWidth
-                                        onChange={(e) => handleSlotChange(dayIndex, slotIndex, "end", e.target.value)}
-                                    />
-                                </Grid>
-                                <Grid size={{ xs: 2 }}>
-                                    <IconButton onClick={() => removeSlot(dayIndex, slotIndex)} size="small" color="error">
-                                        <Remove />
-                                    </IconButton>
-                                </Grid>
-                            </Grid>
-                        ))}
-                        <Button variant="outlined" size="small" onClick={() => addSlot(dayIndex)} startIcon={<Add />}>
-                            Add Slot
-                        </Button>
-                    </Box>
-                ))}
-            </Box>
+            <WeeklyAvailabilityAccordion
+                form={form}
+                handleSlotChange={handleSlotChange}
+                addSlot={addSlot}
+                removeSlot={removeSlot}
+            />
 
             <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }} onClick={handleSubmit}>
                 Submit Request
@@ -298,6 +270,11 @@ export const Doctor: React.FC = () => {
                     {snackbar.message}
                 </Alert>
             </Snackbar>
+                </>
+            )}
+
+            
+            
         </Box>
     );
 }   

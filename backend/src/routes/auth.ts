@@ -1,0 +1,194 @@
+import express from "express";
+import twilio from "twilio";
+import crypto from "crypto";
+import { User } from "../models/User";
+import nodemailer from "nodemailer";
+
+const router = express.Router();
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const numberFrom = process.env.TWILIO_PHONE_NUMBER;
+
+// ✅ Validate credentials before creating client
+if (!accountSid || !authToken) {
+  throw new Error(
+    "❌ Missing Twilio credentials. Please set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in .env"
+  );
+}
+
+const client = twilio(accountSid, authToken);
+
+router.post("/send-otp", async (req, res) => {
+  try {
+    const { identifier } = req.body; // can be email or phone number
+    if (!identifier) return res.status(400).json({ message: "Email or mobile number required" });
+
+    // find doctor by email or phone
+    const doctor = await User.findOne({
+      $or: [{ email: identifier }, { phone: identifier }],
+      role: "doctor",
+    });
+    if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+
+    // generate OTP and expiry
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // valid 5 mins
+
+    doctor.otp = otp;
+    doctor.otpExpiry = otpExpiry;
+    await doctor.save();
+
+    // send via Twilio SMS (or you can email)
+    if (/^\d+$/.test(identifier)) {
+      console.log(`Send SMS OTP to ${identifier} from ${numberFrom}: ${otp}`);
+      await client.messages.create({
+        from: numberFrom,
+        to: `+91${identifier}`,
+        body: `Your login OTP for Doctor Portal is ${otp}`,
+      });
+    } else {
+      console.log(`Send email OTP: ${otp}`); // replace with nodemailer if needed
+    }
+
+    res.json({ message: "OTP sent successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error sending OTP" });
+  }
+});
+
+router.post("/verify-otp", async (req, res) => {
+  const { identifier, otp } = req.body;
+  const doctor = await User.findOne({
+    $or: [{ email: identifier }, { phone: identifier }],
+    role: "doctor",
+  });
+  if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+
+  if (!doctor.otp || doctor.otp !== otp || (doctor.otpExpiry && doctor.otpExpiry.getTime() < Date.now())) {
+    return res.status(400).json({ message: "Invalid or expired OTP" });
+  }
+
+  // Clear OTP after verification
+  doctor.otp = undefined;
+  doctor.otpExpiry = undefined;
+  await doctor.save();
+
+  // You can use JWT token
+  const token = crypto.randomBytes(32).toString("hex");
+  res.json({ message: "Login successful", doctorId: doctor._id, token });
+});
+
+router.post("/register", async (req, res) => {
+  try {
+    const { name, email, phone, password, specialization, clinicName, clinicAddress } = req.body;
+
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ message: "Email already exists" });
+
+    const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+
+    const doctor = new User({
+      name,
+      email,
+      phone,
+      password,
+      role: "doctor",
+      specialization,
+      clinicName,
+      clinicAddress,
+      emailVerificationToken,
+    });
+    await doctor.save();
+
+    // ✉️ Send verification email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    });
+
+    const verifyLink = `http://localhost:4000/auth/verify-email?token=${emailVerificationToken}`;
+    await transporter.sendMail({
+      to: email,
+      subject: "Verify your email",
+      html: `<p>Hello ${name},</p>
+             <p>Please verify your email by clicking below:</p>
+             <a href="${verifyLink}">${verifyLink}</a>`,
+    });
+
+    res.json({ message: "Doctor registered. Please verify your email." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Registration failed" });
+  }
+});
+
+router.post("/send-otp-email", async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({ name, email, role: "doctor" });
+    }
+
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    // ✅ Send OTP Email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER, // Your Gmail
+        pass: process.env.EMAIL_PASS, // App password
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Doctor Registration OTP",
+      text: `Dear ${name || "Doctor"}, your OTP for registration is ${otp}. It is valid for 10 minutes.`,
+    });
+
+    res.json({ message: "OTP sent successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to send OTP" });
+  }
+});
+
+// 🔹 Verify OTP and Register Doctor
+router.post("/verify-otp-email", async (req, res) => {
+  try {
+    const { email, otp, formData } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP" });
+    if (!user.otpExpiry || user.otpExpiry < new Date())
+      return res.status(400).json({ message: "OTP expired" });
+
+    // Clear OTP after verification
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+
+    // Update doctor details
+    Object.assign(user, formData);
+    await user.save();
+
+    res.json({ message: "Doctor registration successful!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "OTP verification failed" });
+  }
+});
+
+
+export default router;

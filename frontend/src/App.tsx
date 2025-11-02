@@ -25,6 +25,8 @@ import logo from "./assets/medichamp.png"
 import { SearchPharmacy } from "./components/doctor/SearchPharmacy";
 import { BookAppointment } from "./components/doctor/BookAppointment";
 import MyAppointments from "./components/doctor/MyAppointments";
+import DoctorLogin from "./components/doctor/DoctorLogin";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App: React.FC = () => {
   const [open, setOpen] = React.useState(false);
@@ -145,12 +147,14 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path="/doctors" element={<Doctor />} />
-              <Route path="/appointments" element={<MyAppointments />} />
+              <Route path="/appointments" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/searchDoctor" element={<SearchDoctor />} />
               <Route path="/searchPharmacy" element={<SearchPharmacy />} />
               <Route path="/book-appointment/:doctorId" element={<BookAppointment />} />
               <Route path="*" element={<Home />} />
+              <Route path="/doctor-login" element={<DoctorLogin />} />
+              <Route path="/my-appointments" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
             </Routes>
           </Grid>
         </Grid>
