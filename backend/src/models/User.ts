@@ -6,7 +6,7 @@ export interface IUser extends Document {
   role: "doctor" | "patient" | "admin";
   email?: string;
   phone: string;
-  password?: string;
+  password: string;
   specialization: string;
   clinicName: string;
   clinicAddress: string;

@@ -3,6 +3,8 @@ import twilio from "twilio";
 import crypto from "crypto";
 import { User } from "../models/User";
 import nodemailer from "nodemailer";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -190,5 +192,43 @@ router.post("/verify-otp-email", async (req, res) => {
   }
 });
 
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate
+    if (!email || !password)
+      return res.status(400).json({ message: "Email and password are required" });
+
+    // Find doctor
+    const doctor = await User.findOne({ email });
+    if (!doctor)
+      return res.status(401).json({ message: "Invalid email or password" });
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, doctor.password);
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid email or password" });
+
+    // ✅ Generate JWT Token
+    const token = jwt.sign(
+      { id: doctor._id, email: doctor.email, role: doctor.role },
+      process.env.JWT_SECRET || "defaultsecret",
+      { expiresIn: "1d" }
+    );
+
+    // ✅ Send token + doctor ID
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      doctorId: doctor._id,
+      doctorName: doctor.name,
+      doctorEmail: doctor.email,
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 export default router;

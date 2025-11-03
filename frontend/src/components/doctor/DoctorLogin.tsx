@@ -1,88 +1,163 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, Typography, Paper, Snackbar, Alert } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  Snackbar,
+  Alert,
+  Link,
+  Stack,
+} from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDoctorStore } from "../../store/useDoctorStore";
+import { BASE_URL } from "../../utils/constants";
 
 const DoctorLogin: React.FC = () => {
-  const [identifier, setIdentifier] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const navigate = useNavigate();
+  const { setDoctor } = useDoctorStore();
 
-  const handleSendOtp = async () => {
-    try {
-      await axios.post("http://localhost:4000/api/auth/send-otp", { identifier });
-      setOtpSent(true);
-      setSnackbar({ open: true, message: "OTP sent successfully!", severity: "success" });
-    } catch (err: any) {
+  // ✅ Handle Login
+  const handleLogin = async () => {
+    if (!email || !password) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to send OTP",
-        severity: "error",
+        message: "Please enter both email and password",
+        severity: "warning",
       });
+      return;
     }
-  };
 
-  const handleVerifyOtp = async () => {
     try {
-      const res = await axios.post("http://localhost:4000/api/auth/verify-otp", {
-        identifier,
-        otp,
+      const res = await axios.post(BASE_URL+ "/api/auth/login", {
+        email,
+        password,
       });
-      setSnackbar({ open: true, message: "Login successful!", severity: "success" });
-      localStorage.setItem("doctorToken", res.data.token);
-      localStorage.setItem("doctorId", res.data.doctorId);
+
+
+      // ✅ On success
+      setSnackbar({
+        open: true,
+        message: "Login successful!",
+        severity: "success",
+      });
+
+      setDoctor({
+        doctorName: res.data.doctorName,
+        doctorId: res.data.doctorId,
+        token: res.data.token,
+      });
       navigate("/my-appointments");
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Invalid OTP",
+        message: err.response?.data?.message || "Invalid credentials",
         severity: "error",
       });
     }
   };
 
+  // ✅ Clear all fields
+  const handleClear = () => {
+    setEmail("");
+    setPassword("");
+  };
+
+  // ✅ Navigate to Forgot Password page
+  const handleForgotPassword = () => {
+    navigate("/forgot-password");
+  };
+
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh" bgcolor="#f8f9fa">
-      <Paper elevation={3} sx={{ p: 4, width: 350 }}>
-        <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-          Doctor Sign-In
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minHeight="80vh"
+      bgcolor="#f8f9fa"
+    >
+      <Paper elevation={3} sx={{ p: 4, width: 360 }}>
+        <Typography
+          variant="h5"
+          fontWeight="bold"
+          textAlign="center"
+          gutterBottom
+        >
+          Doctor Login
         </Typography>
+
         <TextField
           fullWidth
-          label="Email or Mobile Number"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           margin="normal"
+          required
         />
 
-        {otpSent && (
-          <TextField
-            fullWidth
-            label="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            margin="normal"
-          />
-        )}
-
-        <Button
+        <TextField
           fullWidth
-          variant="contained"
-          color="primary"
-          sx={{ mt: 2 }}
-          onClick={otpSent ? handleVerifyOtp : handleSendOtp}
-        >
-          {otpSent ? "Verify OTP" : "Send OTP"}
-        </Button>
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          margin="normal"
+          required
+        />
+
+        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+          <Button
+            fullWidth
+            variant="contained"
+            color="primary"
+            onClick={handleLogin}
+          >
+            Sign In
+          </Button>
+
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            onClick={handleClear}
+          >
+            Clear
+          </Button>
+        </Stack>
+
+        <Box textAlign="center" mt={2}>
+          <Link
+            component="button"
+            variant="body2"
+            underline="hover"
+            onClick={handleForgotPassword}
+          >
+            Forgot Password?
+          </Link>
+        </Box>
 
         <Snackbar
           open={snackbar.open}
           autoHideDuration={3000}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          <Alert severity={snackbar.severity as any}>{snackbar.message}</Alert>
+          <Alert
+            severity={snackbar.severity as any}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+          >
+            {snackbar.message}
+          </Alert>
         </Snackbar>
       </Paper>
     </Box>

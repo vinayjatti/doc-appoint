@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { BASE_URL } from "../utils/constants";
 export const Appoint: React.FC = () => {
     const [form, setForm] = useState({
         doctorId: '',
@@ -26,7 +27,7 @@ export const Appoint: React.FC = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:4000/api/appointments', {
+            const response = await fetch(  BASE_URL + '/api/appointments', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

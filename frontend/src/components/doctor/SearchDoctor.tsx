@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useLoadScript, StandaloneSearchBox } from "@react-google-maps/api";
-import { REACT_APP_GOOGLE_MAP_API_KEY } from "../../utils/constants";
+import { BASE_URL, REACT_APP_GOOGLE_MAP_API_KEY } from "../../utils/constants";
 
 const libraries: ("places")[] = ["places"];
 
@@ -121,7 +121,7 @@ export const SearchDoctor: React.FC = () => {
         return;
       }
 
-      const res = await fetch(`http://localhost:4000/api/users/user/search?${queryParams}`);
+      const res = await fetch(`${BASE_URL}/api/users/user/search?${queryParams}`);
       const data = await res.json();
 
       if (res.status !== 200) {

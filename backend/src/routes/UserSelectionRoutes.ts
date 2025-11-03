@@ -10,6 +10,7 @@ router.post("/user/create", async (req: Request, res: Response) => {
     const {
       name,
       phone,
+      password,
       role,
       email,
       longitude,
@@ -39,6 +40,7 @@ router.post("/user/create", async (req: Request, res: Response) => {
     const newUser = new User({
       name,
       phone,
+      password,
       role,
       email,
       specialization,

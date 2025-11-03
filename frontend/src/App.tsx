@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -15,9 +15,10 @@ import {
   CssBaseline,
   Divider,
   Avatar,
+  Button,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import { Home } from "./components/home/Home";
 import { Doctor } from "./components/doctor/Doctor";
 import { SearchDoctor } from "./components/doctor/SearchDoctor";
@@ -27,33 +28,35 @@ import { BookAppointment } from "./components/doctor/BookAppointment";
 import MyAppointments from "./components/doctor/MyAppointments";
 import DoctorLogin from "./components/doctor/DoctorLogin";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useDoctorStore } from "./store/useDoctorStore";
+
 
 const App: React.FC = () => {
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const { doctorName, logout } = useDoctorStore();
 
-  const Appointments = () => (
-    <Typography variant="h6">📅 Appointments Component</Typography>
-  );
+
   const Profile = () => <Typography variant="h6">👤 Profile Component</Typography>;
 
   const toggleDrawer = (open: boolean) => () => setOpen(open);
 
   return (
-    <Router>
+    <>
       <CssBaseline />
       {/* 🔹 AppBar */}
       <AppBar position="sticky" sx={{ backgroundColor: "#3A3A94" }}>
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            onClick={toggleDrawer(true)}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-           <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              onClick={toggleDrawer(true)}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
             <Avatar
               alt="MediChamp Logo"
               src={logo}
@@ -72,6 +75,40 @@ const App: React.FC = () => {
               MediChamp
             </Typography>
           </Box>
+
+          {/* ✅ Right side: Login / Logged-in Name */}
+          {doctorName ? (
+            <Box display="flex" alignItems="center" gap={2}>
+              <Typography variant="body1" sx={{ color: "#fff" }}>
+                👨‍⚕️ Dr. {doctorName}
+              </Typography>
+              <Button
+                color="inherit"
+                variant="outlined"
+                onClick={logout}
+                sx={{
+                  color: "#fff",
+                  borderColor: "#fff",
+                  "&:hover": { borderColor: "#ddd" },
+                }}
+              >
+                Logout
+              </Button>
+            </Box>
+          ) : (
+            <Button
+              color="inherit"
+              variant="outlined"
+              onClick={() => navigate("/doctor-login")}
+              sx={{
+                color: "#fff",
+                borderColor: "#fff",
+                "&:hover": { borderColor: "#ddd" },
+              }}
+            >
+              Login
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
 
@@ -102,24 +139,30 @@ const App: React.FC = () => {
             <Typography variant="h6" sx={{ fontWeight: 600, color: "#1976d2" }}>
               Menu
             </Typography>
+            {doctorName && (
+              <Typography variant="body2" sx={{ mt: 1, color: "#444" }}>
+                👤 Logged in as <strong>Dr. {doctorName}</strong>
+              </Typography>
+            )}
           </Box>
           <Divider />
           <List>
             {[
               { name: "Home", path: "/home" },
-              { name: "Doctors", path: "/doctors" },
-              { name: "Appointments", path: "/appointments" },
-              { name: "Profile", path: "/profile" },
+              ...(doctorName
+                ? [
+                  { name: "Doctors", path: "/doctors" },
+                  { name: "Appointments", path: "/appointments" },
+                  { name: "Profile", path: "/profile" },
+                ]
+                : []),
               { name: "Search Doctor", path: "/searchDoctor" },
             ].map((item) => (
               <ListItem key={item.name} disablePadding>
                 <ListItemButton component={Link} to={item.path}>
                   <ListItemText
                     primary={item.name}
-                    primaryTypographyProps={{
-                      fontSize: 16,
-                      fontWeight: 500,
-                    }}
+                    primaryTypographyProps={{ fontSize: 16, fontWeight: 500 }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -143,7 +186,7 @@ const App: React.FC = () => {
       >
         <Grid container spacing={2}>
           {/* Page Content */}
-          <Grid  size={{ xs: 12, md: 12 }}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path="/doctors" element={<Doctor />} />
@@ -172,7 +215,7 @@ const App: React.FC = () => {
       >
         © {new Date().getFullYear()} MediChamp — All Rights Reserved
       </Box>
-    </Router>
+      </>
   );
 };
 

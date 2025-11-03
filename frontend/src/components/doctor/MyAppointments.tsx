@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
     Box,
@@ -15,6 +15,8 @@ import type { ColDef } from "ag-grid-community";
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from "ag-grid-community";
 // Core CSS
 import { AgGridReact } from "ag-grid-react";
+import { BASE_URL } from "../../utils/constants";
+import { useDoctorStore } from "../../store/useDoctorStore";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -34,12 +36,13 @@ interface Doctor {
 }
 
 const MyAppointments: React.FC = () => {
-    const [doctorName, setDoctorName] = useState("");
     const [doctor, setDoctor] = useState<Doctor | null>(null);
     const [appointmentDate, setAppointmentDate] = useState("");
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const {doctorId,doctorName,token} = useDoctorStore();
+    
 
     const myTheme = themeQuartz.withParams({
         spacing: 12,
@@ -80,26 +83,32 @@ const MyAppointments: React.FC = () => {
         headerClass: "header-cell",
     }), []);
 
-    // 🔍 Find doctor by name
-    const findDoctor = async () => {
-        try {
-            setError("");
-            setDoctor(null);
-            setAppointments([]);
-            setLoading(true);
-
-            const res = await axios.get(`http://localhost:4000/api/users?name=${doctorName}`);
-            if (res.data && res.data.doctor) {
-                setDoctor(res.data.doctor);
-            } else {
-                setError("Doctor not found");
-            }
-        } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to fetch doctor");
-        } finally {
-            setLoading(false);
+    useEffect(() => {
+        if (!doctorId) {
+            setError("Doctor not logged in. Please log in again.");
+            return;
         }
-    };
+
+        const fetchDoctor = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get(`${BASE_URL}/api/users/user/${doctorId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setDoctor(res.data);
+            } catch (err: any) {
+                setError(err.response?.data?.message || "Failed to load doctor info");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDoctor();
+    }, []);
+
+
 
     // 📅 Fetch appointments
     const fetchAppointments = async () => {
@@ -109,7 +118,7 @@ const MyAppointments: React.FC = () => {
             setError("");
 
             const res = await axios.get(
-                `http://localhost:4000/api/appointments?doctorId=${doctor._id}&date=${appointmentDate}`
+                `${BASE_URL}/api/appointments?doctorId=${doctor._id}&date=${appointmentDate}`
             );
             setAppointments(res.data.appointments || []);
         } catch (err: any) {
@@ -134,31 +143,6 @@ const MyAppointments: React.FC = () => {
             <Typography variant="h5" fontWeight={600} mb={3}>
                 My Appointments
             </Typography>
-
-            {/* 🔍 Doctor Search */}
-            <Box display="flex" gap={2} mb={3}>
-                <TextField
-                    label="Doctor Name"
-                    variant="outlined"
-                    value={doctorName}
-                    onChange={(e) => setDoctorName(e.target.value)}
-                    fullWidth
-                />
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={findDoctor}
-                    disabled={!doctorName || loading}
-                >
-                    Search
-                </Button>
-            </Box>
-
-            {doctor && (
-                <Alert severity="success" sx={{ mb: 2 }}>
-                    Found Doctor: <strong>{doctor.name}</strong>
-                </Alert>
-            )}
 
             {/* 📅 Date Picker */}
             {doctor && (

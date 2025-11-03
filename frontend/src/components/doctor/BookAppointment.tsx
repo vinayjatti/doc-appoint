@@ -21,6 +21,7 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
+import { BASE_URL } from "../../utils/constants";
 
 // Utility to generate slots (e.g. every 30 minutes)
 const generateSlots = (startHour: number, endHour: number, intervalMins: number) => {
@@ -64,7 +65,7 @@ export const BookAppointment: React.FC = () => {
         setLoading(true);
         try {
             // Fetch doctor details
-            const res = await fetch(`http://localhost:4000/api/users/user/${doctorId}`);
+            const res = await fetch(`${BASE_URL}/api/users/user/${doctorId}`);
             const data = await res.json();
 
             if (res.status === 200) {
@@ -76,7 +77,7 @@ export const BookAppointment: React.FC = () => {
             // Fetch booked slots for today
             // yyyy-mm-dd
             const bookedRes = await fetch(
-                `http://localhost:4000/api/appointments/booked-slots?doctorId=${doctorId}&date=${date}`
+                `${BASE_URL}/api/appointments/booked-slots?doctorId=${doctorId}&date=${date}`
             );
             const bookedData = await bookedRes.json();
             if (bookedRes.status === 200) {
@@ -95,7 +96,7 @@ export const BookAppointment: React.FC = () => {
 
         try {
             setLoading(true);
-            const res = await fetch("http://localhost:4000/api/appointments", {
+            const res = await fetch(BASE_URL+ "/api/appointments", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
