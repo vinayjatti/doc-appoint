@@ -29,6 +29,7 @@ import MyAppointments from "./components/doctor/MyAppointments";
 import DoctorLogin from "./components/doctor/DoctorLogin";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useDoctorStore } from "./store/useDoctorStore";
+import { clearSession, isSessionValid } from "./utils/Session";
 
 
 const App: React.FC = () => {
@@ -36,6 +37,13 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const { doctorName, logout } = useDoctorStore();
 
+  useEffect(() => {
+    if (!isSessionValid()) {
+      clearSession();
+      logout(); // clear Zustand store
+      navigate("/login");
+    }
+  }, []);
 
   const Profile = () => <Typography variant="h6">👤 Profile Component</Typography>;
 

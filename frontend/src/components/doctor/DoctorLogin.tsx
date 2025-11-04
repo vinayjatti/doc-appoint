@@ -51,11 +51,18 @@ const DoctorLogin: React.FC = () => {
         severity: "success",
       });
 
+      const loginTime = new Date().getTime();
+      const sessionDuration = 1 * 60 * 60 * 1000;
+
       setDoctor({
         doctorName: res.data.doctorName,
         doctorId: res.data.doctorId,
         token: res.data.token,
+        loginTime: loginTime.toString(),
+        sessionDuration: sessionDuration.toString(),
+        bookingSlotsType: res.data.bookingSlotsType,
       });
+
       navigate("/my-appointments");
     } catch (err: any) {
       setSnackbar({

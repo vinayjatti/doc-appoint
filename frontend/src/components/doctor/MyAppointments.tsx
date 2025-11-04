@@ -10,6 +10,10 @@ import {
     Alert,
     createTheme,
     useMediaQuery,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from "@mui/material";
 import type { ColDef } from "ag-grid-community";
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from "ag-grid-community";
@@ -26,6 +30,7 @@ interface Appointment {
     patientNumber: string;
     appointmentDate: string;
     slot?: string;
+    bookingStatus?: string;
     paymentStatus?: string;
     patientQueueNumber?: number;
 }
@@ -33,6 +38,7 @@ interface Appointment {
 interface Doctor {
     _id: string;
     name: string;
+     bookingSlotsType: "slots" | "number";
 }
 
 const MyAppointments: React.FC = () => {
@@ -41,8 +47,11 @@ const MyAppointments: React.FC = () => {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const {doctorId,doctorName,token} = useDoctorStore();
-    
+    const [selectedRows, setSelectedRows] = useState<Appointment[]>([]);
+    const [bookingStatus, setBookingStatus] = useState("");
+    const [paymentStatus, setPaymentStatus] = useState("");
+    const { doctorId, doctorName, token,bookingSlotsType } = useDoctorStore();
+
 
     const myTheme = themeQuartz.withParams({
         spacing: 12,
@@ -57,24 +66,66 @@ const MyAppointments: React.FC = () => {
 
     // ✅ AG Grid Columns
 
-    const columnDefs: ColDef[] = useMemo(() => [
+    const columnDefs: ColDef[] = useMemo(() => {
+       const cols: ColDef[] =  [
+        {
+            headerCheckboxSelection: true,   // ✅ Checkbox in header for "select all"
+            checkboxSelection: true,          // ✅ Checkbox in each row
+            width: 60,
+            pinned: "left",
+            headerName: "",                   // optional: hide header label
+        },
         {
             headerName: "#",
             valueGetter: (params: any) => params.node.rowIndex + 1,
-            width: 80,
+            width: 50,
             pinned: "left",
         },
         { headerName: "Patient Name", field: "patientName", flex: 1 },
         { headerName: "Number", field: "patientNumber", flex: 1 },
-        { headerName: "Slot", field: "slot", flex: 1 },
+       
         {
-            headerName: "Status",
+            headerName: "Booking Status",
+            field: "bookingStatus",
+            flex: 1,
+            cellStyle: (params: any) => {
+                const value = params.value?.toLowerCase();
+                if (value === "confirmed") {
+                    return { color: "green", fontWeight: 600 };
+                } else if (value === "closed") {
+                    return { color: "orange", fontWeight: 600 };
+                } else {
+                    return { color: "gray", fontWeight: 500 };
+                }
+            }
+
+        },
+        {
+            headerName: "Payment Status",
             field: "paymentStatus",
             flex: 1,
             cellClass: (params: any) =>
                 params.value === "paid" ? "status-paid" : "status-pending",
+            cellStyle: (params: any) => {
+                const value = params.value?.toLowerCase();
+                if (value === "paid") {
+                    return { color: "green", fontWeight: 600 };
+                } else if (value === "unpaid") {
+                    return { color: "gray", fontWeight: 500 };
+                } else {
+                    return { color: "orange", fontWeight: 600 };
+                }
+            },
         },
-    ], []);
+
+    ]
+    if (bookingSlotsType === "number") {
+        cols.push({ headerName: "Queue Number", field: "patientQueueNumber", flex: 1 });
+    } else {
+        cols.push({ headerName: "Slots booked", field: "slot", flex: 1 });
+    }
+    return cols;
+    }, []);
 
     const defaultColDef = useMemo(() => ({
         sortable: true,
@@ -109,6 +160,9 @@ const MyAppointments: React.FC = () => {
     }, []);
 
 
+    const onSelectionChanged = (event: any) => {
+        setSelectedRows(event.api.getSelectedRows());
+    };
 
     // 📅 Fetch appointments
     const fetchAppointments = async () => {
@@ -128,10 +182,40 @@ const MyAppointments: React.FC = () => {
         }
     };
 
+    const handleBulkUpdate = async () => {
+        if (selectedRows.length === 0) {
+            setError("Please select at least one appointment to update.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError("");
+
+            const updates = selectedRows.map((row) => ({
+                appointmentId: row._id,
+                bookingStatus: bookingStatus || row.bookingStatus,
+                paymentStatus: paymentStatus || row.paymentStatus,
+            }));
+
+            await axios.put(`${BASE_URL}/api/appointments/bulk-update`, { updates });
+
+            // Refresh list after update
+            fetchAppointments();
+            setBookingStatus("");
+            setPaymentStatus("");
+        } catch (err: any) {
+            setError(err.response?.data?.message || "Failed to update appointments");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Box
             sx={{
-                maxWidth: 900,
+                maxWidth: 1200,
+                minWidth: 900,
                 mx: "auto",
                 mt: 6,
                 p: 4,
@@ -166,6 +250,46 @@ const MyAppointments: React.FC = () => {
                 </Box>
             )}
 
+            {appointments.length > 0 && (
+                <Box display="flex" gap={2} mb={3} flexWrap="wrap">
+                    <FormControl sx={{ minWidth: 160 }}>
+                        <InputLabel>Booking Status</InputLabel>
+                        <Select
+                            value={bookingStatus}
+                            onChange={(e) => setBookingStatus(e.target.value)}
+                            label="Booking Status"
+                        >
+                            <MenuItem value="confirmed">Confirmed</MenuItem>
+                            <MenuItem value="cancelled">Cancelled</MenuItem>
+                            <MenuItem value="pending">Pending</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <FormControl sx={{ minWidth: 160 }}>
+                        <InputLabel>Payment Status</InputLabel>
+                        <Select
+                            value={paymentStatus}
+                            onChange={(e) => setPaymentStatus(e.target.value)}
+                            label="Payment Status"
+                        >
+                            <MenuItem value="paid">Paid</MenuItem>
+                            <MenuItem value="unpaid">Unpaid</MenuItem>
+                            <MenuItem value="partial">Partial</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleBulkUpdate}
+                        disabled={loading || selectedRows.length === 0}
+                    >
+                        Update Selected
+                    </Button>
+                </Box>
+            )}
+
+
             {/* ⚠️ Error */}
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>
@@ -182,17 +306,28 @@ const MyAppointments: React.FC = () => {
 
             {/* 📋 Appointments Table */}
             {!loading && appointments.length > 0 && (
-                <Paper elevation={2} sx={{ height: 400, width: "100%" }}>
-                    <div className="ag-theme-alpine" style={{ height: "100%", width: "100%" }}>
+                <>
+
+                    <Box
+                        className="ag-theme-alpine"
+                        sx={{
+                            width: "100%",
+                            minWidth: 600, // ✅ ensures table doesn’t collapse too much
+                            height: { xs: 400, md: 500 }, // ✅ responsive height
+                        }}
+                    >
                         <AgGridReact
                             rowData={appointments}
                             columnDefs={columnDefs}
                             defaultColDef={defaultColDef}
+                            rowSelection={"multiple"}
+                            suppressRowClickSelection={true}
+                            onSelectionChanged={onSelectionChanged}
                             theme={myTheme}
-                            rowSelection={{ mode: "singleRow" }}
+                            domLayout="autoHeight" // ✅ adjusts grid height automatically
                         />
-                    </div>
-                </Paper>
+                    </Box>
+                </>
             )}
 
             {!loading && doctor && appointments.length === 0 && (

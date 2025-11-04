@@ -17,6 +17,7 @@ router.post("/", async (req: Request, res: Response) => {
       patientName,
       appointmentDate,
       slot,
+      bookingStatus,
       paymentStatus,
       patientNumber,
       bookingSlotsType, // ✅ Added to handle logic based on type
@@ -88,7 +89,8 @@ router.post("/", async (req: Request, res: Response) => {
       patientName,
       patientNumber,
       appointmentDate,
-      slot: bookingSlotsType !== "number" ? slot : undefined  , // only for slot-based
+      slot: bookingSlotsType !== "number" ? slot : undefined  , 
+      bookingStatus: bookingStatus || "booked",
       paymentStatus: paymentStatus || "pending",
       patientQueueNumber: nextQueueNumber,
     });
@@ -230,6 +232,21 @@ router.patch("/:id/status", async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Error updating appointment:", err);
     res.status(500).json({ error: "Failed to update appointment" });
+  }
+});
+
+router.put("/bulk-update", async (req, res) => {
+  try {
+    const { updates } = req.body; // array of { appointmentId, bookingStatus, paymentStatus }
+    for (const update of updates) {
+      await Appointment.findByIdAndUpdate(update.appointmentId, {
+        bookingStatus: update.bookingStatus,
+        paymentStatus: update.paymentStatus,
+      });
+    }
+    res.json({ message: "Appointments updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Bulk update failed", error: err});
   }
 });
 

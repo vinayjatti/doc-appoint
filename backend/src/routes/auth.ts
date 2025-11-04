@@ -5,6 +5,7 @@ import { User } from "../models/User";
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { UserAuth } from "../models/UserAuth";
 
 const router = express.Router();
 
@@ -205,8 +206,11 @@ router.post("/login", async (req, res) => {
     if (!doctor)
       return res.status(401).json({ message: "Invalid email or password" });
 
+    const userAuth = await UserAuth.findOne({ userId: doctor._id });
+    if (!userAuth) return res.status(401).json({ message: "Authentication data missing" });
+
     // Check password
-    const isMatch = await bcrypt.compare(password, doctor.password);
+    const isMatch = await bcrypt.compare(password, userAuth.passwordHash);
     if (!isMatch)
       return res.status(401).json({ message: "Invalid email or password" });
 
@@ -224,6 +228,7 @@ router.post("/login", async (req, res) => {
       doctorId: doctor._id,
       doctorName: doctor.name,
       doctorEmail: doctor.email,
+      bookingSlotsType: doctor.bookingSlotsType,
     });
   } catch (err) {
     console.error("Login error:", err);

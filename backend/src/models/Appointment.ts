@@ -5,7 +5,7 @@ export interface IAppointment extends Document {
   patientNumber: string;
   appointmentDate: Date;
   slot?: string; // e.g., "10:00 AM - 10:30 AM"
-  status: "booked" | "completed" | "cancelled";
+  bookingStatus: "booked" | "completed" | "cancelled";
   paymentStatus: "paid" | "pending" | "failed";
   createdAt: Date;
   updatedAt: Date;
@@ -39,7 +39,7 @@ const AppointmentSchema: Schema = new Schema<IAppointment>(
       type: String,
       required: false,
     },
-    status: {
+    bookingStatus: {
       type: String,
       enum: ["booked", "completed", "cancelled"],
       default: "booked",

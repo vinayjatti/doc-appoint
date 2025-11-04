@@ -105,6 +105,7 @@ export const BookAppointment: React.FC = () => {
                     patientNumber,
                     appointmentDate: selectedDate.format("YYYY-MM-DD"),
                     slot: selectedSlot,
+                    bookingstatus: "booked",
                     paymentStatus: "pending",
                 }),
             });

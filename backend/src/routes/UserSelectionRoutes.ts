@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import mongoose from "mongoose";
 import { User } from "../models/User";
+import bcrypt from "bcryptjs";
+import { UserAuth } from "../models/UserAuth";
 import { sendWhatsApp } from "../utils/sendWhatsApp";
 
 const router = Router();
@@ -19,28 +21,22 @@ router.post("/user/create", async (req: Request, res: Response) => {
       specialization,
       clinicName,
       clinicAddress,
-      availability, // expecting [{ day: "Monday", slots: [{ start: "09:00", end: "12:00" }] }]
+      availability,
     } = req.body;
 
-    // ✅ Validate required fields
-    if (!name || !phone || !role) {
-      return res.status(400).json({ message: "Name, phone, and role are required" });
+    if (!name || !phone || !role || !password) {
+      return res.status(400).json({ message: "Name, phone, role, and password are required" });
     }
 
-    // ✅ Check for existing user
-    const existingUser = await User.findOne({
-      $or: [{ phone }, { email }],
-    });
-
+    const existingUser = await User.findOne({ $or: [{ phone }, { email }] });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // ✅ Create new user with availability and location
+    // Create user profile first
     const newUser = new User({
       name,
       phone,
-      password,
       role,
       email,
       specialization,
@@ -51,14 +47,19 @@ router.post("/user/create", async (req: Request, res: Response) => {
       availability: Array.isArray(availability) ? availability : [],
       location: {
         type: "Point",
-        coordinates: [
-          parseFloat(longitude) || 0,
-          parseFloat(latitude) || 0,
-        ],
+        coordinates: [parseFloat(longitude) || 0, parseFloat(latitude) || 0],
       },
     });
-
     await newUser.save();
+
+    // Create auth record separately
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    await new UserAuth({
+      userId: newUser._id,
+      passwordHash,
+    }).save();
 
     return res.status(201).json({
       message: "User created successfully",
@@ -68,7 +69,7 @@ router.post("/user/create", async (req: Request, res: Response) => {
     console.error("Error creating user:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
-});
+}); 
 
 router.get("/user/search", async (req: Request, res: Response) => {
   try {
