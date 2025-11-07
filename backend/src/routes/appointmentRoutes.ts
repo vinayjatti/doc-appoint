@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { Appointment } from "../models/Appointment";
 import { User } from "../models/User";
 import { sendWhatsApp } from "../utils/sendWhatsApp";
+import {verifyToken} from "../middleware/authMiddleware";
 
 const router = Router();
 
@@ -126,7 +127,7 @@ router.get("/", async (req, res) => {
   res.json({ appointments });
 });
 
-router.get("/doctor/:id", async (req: Request, res: Response) => {
+router.get("/doctor/:id",verifyToken, async (req: Request, res: Response) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).json({ message: "Invalid doctor ID" });
   }
@@ -186,7 +187,7 @@ router.post("/book", async (req, res) => {
   }
 });
 
-router.get("/:doctorId", async (req: Request, res: Response) => {
+router.get("/:doctorId",verifyToken, async (req: Request, res: Response) => {
   try {
     const { doctorId } = req.params;
     const { date } = req.query;

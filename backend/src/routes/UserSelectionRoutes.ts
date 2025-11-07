@@ -4,6 +4,7 @@ import { User } from "../models/User";
 import bcrypt from "bcryptjs";
 import { UserAuth } from "../models/UserAuth";
 import { sendWhatsApp } from "../utils/sendWhatsApp";
+import { verifyToken } from "../middleware/authMiddleware";
 
 const router = Router();
 
