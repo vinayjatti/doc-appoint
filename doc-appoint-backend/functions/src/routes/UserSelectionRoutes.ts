@@ -1,10 +1,10 @@
 import { Router, Request, Response } from "express";
 import mongoose from "mongoose";
-import { User } from "../models/User";
+import { User } from "../models/User.js";
 import bcrypt from "bcryptjs";
-import { UserAuth } from "../models/UserAuth";
-import { sendWhatsApp } from "../utils/sendWhatsApp";
-import { verifyToken } from "../middleware/authMiddleware";
+import { UserAuth } from "../models/UserAuth.js";
+import { sendWhatsApp } from "../utils/sendWhatsApp.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = Router();
 

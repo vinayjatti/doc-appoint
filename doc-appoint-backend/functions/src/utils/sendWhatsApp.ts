@@ -1,11 +1,12 @@
 import twilio from "twilio";
 import dotenv from "dotenv";
+import { CONFIG } from "../config/config.js";
 
 dotenv.config(); 
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const whatsappFrom = process.env.WHATSAPP_FROM; // e.g. +14155238886
+const accountSid = CONFIG.TWILIO_ACCOUNT_SID;
+const authToken = CONFIG.TWILIO_AUTH_TOKEN;
+const whatsappFrom = CONFIG.WHATSAPP_FROM; // e.g. +14155238886
 
 // ✅ Validate credentials before creating client
 if (!accountSid || !authToken) {

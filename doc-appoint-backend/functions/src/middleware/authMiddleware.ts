@@ -1,6 +1,7 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { Request, Response, NextFunction } from "express";
+import { CONFIG } from "../config/config.js";
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
   const token = authHeader.split(" ")[1];
 
   try {
-    const secret = process.env.JWT_SECRET;
+    const secret = CONFIG.JWT_SECRET;
     if (!secret) {
       throw new Error("JWT_SECRET not configured");
     }

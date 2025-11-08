@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { sendWhatsApp } from "../utils/sendWhatsApp";
-import { searchNearBy } from "../utils/GoogleSearchApi";
+import { sendWhatsApp } from "../utils/sendWhatsApp.js";
+import { searchNearBy } from "../utils/GoogleSearchApi.js";
 
 const router = Router();
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendWhatsApp } from "../utils/sendWhatsApp";
+import { sendWhatsApp } from "../utils/sendWhatsApp.js";
 
 const router = Router();
 
@@ -11,6 +11,6 @@ router.post("/send", async (req, res) => {
     }catch(err){
         return res.status(500).json({ error: "Failed to send WhatsApp message" });
     }
-})
+})  
 
 export default router;

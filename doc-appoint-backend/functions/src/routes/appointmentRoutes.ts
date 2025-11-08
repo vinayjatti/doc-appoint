@@ -1,9 +1,9 @@
 import { Router, Request, Response } from "express";
 import mongoose from "mongoose";
-import { Appointment } from "../models/Appointment";
-import { User } from "../models/User";
-import { sendWhatsApp } from "../utils/sendWhatsApp";
-import {verifyToken} from "../middleware/authMiddleware";
+import { Appointment } from "../models/Appointment.js";
+import { User } from "../models/User.js";
+import { sendWhatsApp } from "../utils/sendWhatsApp.js";
+import {verifyToken} from "../middleware/authMiddleware.js";
 
 const router = Router();
 

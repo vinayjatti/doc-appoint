@@ -1,17 +1,18 @@
 import express from "express";
 import twilio from "twilio";
 import crypto from "crypto";
-import { User } from "../models/User";
+import { User } from "../models/User.js";
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { UserAuth } from "../models/UserAuth";
+import { UserAuth } from "../models/UserAuth.js";
+import { CONFIG } from "../config/config.js";
 
 const router = express.Router();
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const numberFrom = process.env.TWILIO_PHONE_NUMBER;
+const accountSid = CONFIG.TWILIO_ACCOUNT_SID;
+const authToken = CONFIG.TWILIO_AUTH_TOKEN;
+const numberFrom = CONFIG.TWILIO_PHONE_NUMBER;
 
 // ✅ Validate credentials before creating client
 if (!accountSid || !authToken) {
@@ -108,7 +109,7 @@ router.post("/register", async (req, res) => {
     // ✉️ Send verification email
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+      auth: { user: CONFIG.EMAIL_USER, pass: CONFIG.EMAIL_PASS },
     });
 
     const verifyLink = `http://localhost:4000/auth/verify-email?token=${emailVerificationToken}`;
@@ -148,13 +149,13 @@ router.post("/send-otp-email", async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER, // Your Gmail
-        pass: process.env.EMAIL_PASS, // App password
+        user: CONFIG.EMAIL_USER, // Your Gmail
+        pass: CONFIG.EMAIL_PASS, // App password
       },
     });
 
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: CONFIG.EMAIL_USER,
       to: email,
       subject: "Your Doctor Registration OTP",
       text: `Dear ${name || "Doctor"}, your OTP for registration is ${otp}. It is valid for 10 minutes.`,
@@ -217,7 +218,7 @@ router.post("/login", async (req, res) => {
     // ✅ Generate JWT Token
     const token = jwt.sign(
       { id: doctor._id, email: doctor.email, role: doctor.role },
-      process.env.JWT_SECRET || "defaultsecret",
+      CONFIG.JWT_SECRET || "defaultsecret",
       { expiresIn: "1d" }
     );
 
