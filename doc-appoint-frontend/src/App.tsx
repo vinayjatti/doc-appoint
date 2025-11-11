@@ -18,7 +18,7 @@ import {
   Button,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, Navigate } from "react-router-dom";
 import { Home } from "./components/home/Home";
 import { Doctor } from "./components/doctor/Doctor";
 import { SearchDoctor } from "./components/doctor/SearchDoctor";
@@ -30,12 +30,14 @@ import DoctorLogin from "./components/doctor/DoctorLogin";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useDoctorStore } from "./store/useDoctorStore";
 import { clearSession, isSessionValid } from "./utils/Session";
+import { AdminCreateAdmin } from "./components/AdminCreateAdmin";
+import { UserProfileUpdate } from "./components/doctor/UserProfileUpdate";
 
 
 const App: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
-  const { doctorName, logout } = useDoctorStore();
+  const { doctorName, logout,userRole } = useDoctorStore();
 
   useEffect(() => {
     if (!isSessionValid()) {
@@ -162,6 +164,10 @@ const App: React.FC = () => {
                   { name: "Doctors", path: "/doctors" },
                   { name: "Appointments", path: "/appointments" },
                   { name: "Profile", path: "/profile" },
+                  // ✅ Show "Create Admin" only if logged-in user is admin
+                  ...(userRole === "admin"
+                    ? [{ name: "Create Admin", path: "/create-admin" }]
+                    : []),
                 ]
                 : []),
               { name: "Search Doctor", path: "/searchDoctor" },
@@ -199,13 +205,17 @@ const App: React.FC = () => {
               <Route path="/home" element={<Home />} />
               <Route path="/doctors" element={<Doctor />} />
               <Route path="/appointments" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={<ProtectedRoute><UserProfileUpdate /></ProtectedRoute>} />
               <Route path="/searchDoctor" element={<SearchDoctor />} />
               <Route path="/searchPharmacy" element={<SearchPharmacy />} />
               <Route path="/book-appointment/:doctorId" element={<BookAppointment />} />
               <Route path="*" element={<Home />} />
               <Route path="/doctor-login" element={<DoctorLogin />} />
               <Route path="/my-appointments" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
+              <Route
+                path="/create-admin"
+                element={userRole === "admin" ? <AdminCreateAdmin /> : <Navigate to="/unauthorized" />}
+              />
             </Routes>
           </Grid>
         </Grid>
@@ -223,7 +233,7 @@ const App: React.FC = () => {
       >
         © {new Date().getFullYear()} MediChamp — All Rights Reserved
       </Box>
-      </>
+    </>
   );
 };
 

@@ -7,6 +7,7 @@ interface DoctorState {
   loginTime?: string | null;
   sessionDuration?: string | null;
   bookingSlotsType?: string | null;
+  userRole?: string | null;
   setDoctor: (data: {
     doctorName: string;
     doctorId: string;
@@ -14,6 +15,7 @@ interface DoctorState {
     loginTime: string;
     sessionDuration: string;
     bookingSlotsType: string;
+    userRole?: string;
   }) => void;
   logout: () => void;
 }
@@ -25,6 +27,7 @@ export const useDoctorStore = create<DoctorState>((set) => ({
   loginTime: localStorage.getItem("loginTime"),
   sessionDuration: localStorage.getItem("sessionDuration"),
   bookingSlotsType: localStorage.getItem("bookingSlotsType"),
+  userRole: localStorage.getItem("userRole"),
 
   setDoctor: ({
     doctorName,
@@ -33,6 +36,7 @@ export const useDoctorStore = create<DoctorState>((set) => ({
     loginTime,
     sessionDuration,
     bookingSlotsType,
+    userRole
   }) => {
     localStorage.setItem("doctorName", doctorName);
     localStorage.setItem("doctorId", doctorId);
@@ -40,6 +44,7 @@ export const useDoctorStore = create<DoctorState>((set) => ({
     localStorage.setItem("loginTime", loginTime);
     localStorage.setItem("sessionDuration", sessionDuration);
     localStorage.setItem("bookingSlotsType", bookingSlotsType);
+    localStorage.setItem("userRole", userRole || "user");
 
     set({
       doctorName,
@@ -48,6 +53,7 @@ export const useDoctorStore = create<DoctorState>((set) => ({
       loginTime,
       sessionDuration,
       bookingSlotsType,
+      userRole
     });
   },
 
@@ -60,6 +66,7 @@ export const useDoctorStore = create<DoctorState>((set) => ({
       loginTime: null,
       sessionDuration: null,
       bookingSlotsType: null,
+      userRole: null,
     });
   },
 }));

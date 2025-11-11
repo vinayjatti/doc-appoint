@@ -142,4 +142,79 @@ router.get("/", async (req, res) => {
   }
 });
 
+
+router.post("/admin/create", verifyToken, async (req: any, res: Response) => {
+  try {
+    const currentUser = req.user as any;
+
+    // check that the logged-in user is an admin
+    if (!currentUser || currentUser.role !== "admin") {
+      return res.status(403).json({ message: "Access denied: Admins only" });
+    }
+
+    const { name, phone, email, password, role } = req.body;
+
+    if (!name || !phone || !email || !password) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // check if user already exists
+    const existingUser = await User.findOne({ $or: [{ phone }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // create user document
+    const newUser = new User({
+      name,
+      phone,
+      email,
+      role: role || "user", // default to admin
+    });
+    await newUser.save();
+
+    // hash password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+    await new UserAuth({ userId: newUser._id, passwordHash }).save();
+
+    return res.status(201).json({
+      message: "Admin created successfully",
+      user: newUser,
+    });
+  } catch (err) {
+    console.error("Error creating admin:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.put("/user/update", verifyToken, async (req, res) => {
+  try {
+    const {doctorId, name, phone, specialization, clinicName, clinicAddress } = req.body;
+
+    // Validate required fields
+    if (!name || !phone || !specialization || !clinicName || !clinicAddress ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const user = await User.findById(doctorId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Update user details
+    user.name = name;
+    user.phone = phone;
+    user.specialization = specialization;
+    user.clinicName = clinicName;
+    user.clinicAddress = clinicAddress;
+
+    await user.save();
+
+    res.json({ message: "Profile updated successfully" });
+  } catch (err) {
+    console.error("Error updating profile:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
 export default router;

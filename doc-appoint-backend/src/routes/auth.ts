@@ -229,11 +229,14 @@ router.post("/login", async (req, res) => {
       doctorName: doctor.name,
       doctorEmail: doctor.email,
       bookingSlotsType: doctor.bookingSlotsType,
+      role: doctor.role,
     });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
+
 
 export default router;

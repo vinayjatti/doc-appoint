@@ -5,9 +5,12 @@ import { Request, Response, NextFunction } from "express";
 dotenv.config();
 
 export interface AuthRequest extends Request {
-  user?: string | JwtPayload;
+  user?: JwtPayload & { role?: string };
 }
 
+/**
+ * Verify token middleware
+ */
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
@@ -20,14 +23,29 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
 
   try {
     const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error("JWT_SECRET not configured");
-    }
+    if (!secret) throw new Error("JWT_SECRET not configured");
 
-    const decoded = jwt.verify(token, secret);
-    req.user = decoded; // attach user payload to request
+    const decoded = jwt.verify(token, secret) as JwtPayload & { role?: string };
+    req.user = decoded;
     next();
   } catch (error) {
     res.status(403).json({ message: "Invalid or expired token" });
   }
+};
+
+/**
+ * Verify admin middleware
+ */
+export const verifyAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (!req.user) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  if (req.user.role !== "admin") {
+    res.status(403).json({ message: "Access denied. Admins only." });
+    return;
+  }
+
+  next();
 };

@@ -61,6 +61,7 @@ const DoctorLogin: React.FC = () => {
         loginTime: loginTime.toString(),
         sessionDuration: sessionDuration.toString(),
         bookingSlotsType: res.data.bookingSlotsType,
+        userRole: res.data.role,
       });
 
       navigate("/my-appointments");
