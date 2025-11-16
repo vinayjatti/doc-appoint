@@ -20,6 +20,8 @@ export interface IUser extends Document {
   };
   otp?: string;
   otpExpiry?: Date;
+  resetCode?: String,
+  resetCodeExpires?: number,
   emailVerified: boolean;
   emailVerificationToken?: string;
 }
@@ -46,6 +48,8 @@ const userSchema = new Schema<IUser>(
     },
     otp: String,
     otpExpiry: Date,
+    resetCode: { type: String },
+    resetCodeExpires: { type: Number },
     emailVerified: { type: Boolean, default: false },
     emailVerificationToken: String,
     meta: Schema.Types.Mixed,

@@ -32,6 +32,9 @@ import { useDoctorStore } from "./store/useDoctorStore";
 import { clearSession, isSessionValid } from "./utils/Session";
 import { AdminCreateAdmin } from "./components/AdminCreateAdmin";
 import { UserProfileUpdate } from "./components/doctor/UserProfileUpdate";
+import ForgotPassword from "./components/doctor/ForgotPassword";
+import VerifyCode from "./components/doctor/VerifyCode";
+import ResetPassword from "./components/doctor/ResetPassword";
 
 
 const App: React.FC = () => {
@@ -216,6 +219,9 @@ const App: React.FC = () => {
                 path="/create-admin"
                 element={userRole === "admin" ? <AdminCreateAdmin /> : <Navigate to="/unauthorized" />}
               />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify-code" element={<VerifyCode />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
           </Grid>
         </Grid>

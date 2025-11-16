@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import { User } from "../models/User";
 import bcrypt from "bcryptjs";
 import { UserAuth } from "../models/UserAuth";
-import { sendWhatsApp } from "../utils/sendWhatsApp";
 import { verifyToken } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -215,6 +214,7 @@ router.put("/user/update", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 
 export default router;

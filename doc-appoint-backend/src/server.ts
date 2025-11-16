@@ -6,6 +6,7 @@ import appointmentRoutes  from "./routes/appointmentRoutes";
 import MessageRouter from "./routes/MessageRouter";
 import GoogleSearchRouter from "./routes/GoogleSearchRouter";
 import UserSelectionRoutes from "./routes/UserSelectionRoutes";
+import UserAccountManageRoutes from "./routes/UserAccountManageRoutes";
 import auth from "./routes/auth";
 import { User } from "./models/User";
 import { applySecurityMiddleware } from "./middleware/security";
@@ -28,6 +29,7 @@ app.use("/api/messages", MessageRouter);
 app.use("/api/google", GoogleSearchRouter);
 app.use("/api/users",UserSelectionRoutes);
 app.use("/api/auth",auth);
+app.use("/api/account",UserAccountManageRoutes);
 
 const PORT = process.env.PORT || 4000;
 
