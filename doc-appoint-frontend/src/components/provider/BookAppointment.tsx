@@ -8,8 +8,6 @@ import {
     CircularProgress,
     Grid,
     RadioGroup,
-    FormControlLabel,
-    Radio,
     Snackbar,
     Alert,
     DialogActions,
@@ -23,15 +21,19 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { BASE_URL } from "../../utils/constants";
 
-// Utility to generate slots (e.g. every 30 minutes)
+// Utility to generate slots
 const generateSlots = (startHour: number, endHour: number, intervalMins: number) => {
     const slots: string[] = [];
     for (let hour = startHour; hour < endHour; hour++) {
         for (let min = 0; min < 60; min += intervalMins) {
-            const start = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
-            const endHour = hour + Math.floor((min + intervalMins) / 60);
+            const start = `${hour.toString().padStart(2, "0")}:${min
+                .toString()
+                .padStart(2, "0")}`;
+            const endHourCalc = hour + Math.floor((min + intervalMins) / 60);
             const endMin = (min + intervalMins) % 60;
-            const end = `${endHour.toString().padStart(2, "0")}:${endMin.toString().padStart(2, "0")}`;
+            const end = `${endHourCalc.toString().padStart(2, "0")}:${endMin
+                .toString()
+                .padStart(2, "0")}`;
             slots.push(`${start}-${end}`);
         }
     }
@@ -39,10 +41,10 @@ const generateSlots = (startHour: number, endHour: number, intervalMins: number)
 };
 
 export const BookAppointment: React.FC = () => {
-    const { doctorId } = useParams();
+    const { providerId } = useParams();
     const navigate = useNavigate();
 
-    const [doctor, setDoctor] = useState<any>(null);
+    const [provider, setProvider] = useState<any>(null);
     const [selectedSlot, setSelectedSlot] = useState("");
     const [bookedSlots, setBookedSlots] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -50,34 +52,31 @@ export const BookAppointment: React.FC = () => {
     const [error, setError] = useState("");
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
     const [openDialog, setOpenDialog] = useState(false);
-    const [patientName, setPatientName] = useState("");
-    const [patientNumber, setPatientNumber] = useState("");
+    const [clientName, setClientName] = useState("");
+    const [clientContact, setClientContact] = useState("");
 
-    // Generate fixed slots for morning to evening (9 AM - 6 PM)
-    const dailySlots = generateSlots(9, 18, 30); // every 30 mins
+    const dailySlots = generateSlots(9, 18, 30);
 
     useEffect(() => {
-        const date = selectedDate === null ? new Date().toISOString().split("T")[0] : selectedDate.toISOString().split("T")[0];
-        fetchDoctorDetails(doctorId, date);
-    }, [doctorId, selectedDate]);
+        const date = selectedDate
+            ? selectedDate.toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0];
 
-    const fetchDoctorDetails = async (doctorId: any, date: string) => {
+        fetchProviderDetails(providerId, date);
+    }, [providerId, selectedDate]);
+
+    const fetchProviderDetails = async (providerId: any, date: string) => {
         setLoading(true);
         try {
-            // Fetch doctor details
-            const res = await fetch(`${BASE_URL}/api/users/user/${doctorId}`);
+            const res = await fetch(`${BASE_URL}/api/users/user/${providerId}`);
             const data = await res.json();
 
-            if (res.status === 200) {
-                setDoctor(data);
-            } else {
-                setError(data.message || "Doctor not found");
-            }
+            if (res.status === 200) setProvider(data);
+            else setError(data.message || "Provider not found");
 
-            // Fetch booked slots for today
-            // yyyy-mm-dd
+            // Fetch booked slots
             const bookedRes = await fetch(
-                `${BASE_URL}/api/appointments/booked-slots?doctorId=${doctorId}&date=${date}`
+                `${BASE_URL}/api/appointments/booked-slots?providerId=${providerId}&date=${date}`
             );
             const bookedData = await bookedRes.json();
             if (bookedRes.status === 200) {
@@ -92,20 +91,25 @@ export const BookAppointment: React.FC = () => {
     };
 
     const handleConfirmBooking = async () => {
-        if (doctor.bookingSlotsType === "slots" && !selectedSlot || !selectedDate || !patientName) return alert("Please fill all details");
+        if (
+            (provider.bookingSlotsType === "slots" && !selectedSlot) ||
+            !selectedDate ||
+            !clientName
+        )
+            return alert("Please fill all details");
 
         try {
             setLoading(true);
-            const res = await fetch(BASE_URL+ "/api/appointments", {
+            const res = await fetch(BASE_URL + "/api/appointments", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    doctorId,
-                    patientName,
-                    patientNumber,
+                    providerId,
+                    clientName:clientName,
+                    clientContact:clientContact,
                     appointmentDate: selectedDate.format("YYYY-MM-DD"),
                     slot: selectedSlot,
-                    bookingstatus: "booked",
+                    bookingStatus: "booked",
                     paymentStatus: "pending",
                 }),
             });
@@ -114,24 +118,23 @@ export const BookAppointment: React.FC = () => {
             try {
                 const text = await res.text();
                 data = text ? JSON.parse(text) : {};
-            } catch {
-                data = {}; // non-JSON or empty response
-            }
+            } catch (_) {}
 
             if (!res.ok) {
                 setError(data.message || "Failed to book appointment");
             } else {
                 setSuccess(true);
                 setOpenDialog(false);
-                setPatientName("");
-                setPatientNumber("");
+                setClientName("");
+                setClientContact("");
                 setSelectedSlot("");
+
                 const date = selectedDate.toISOString().split("T")[0];
-                fetchDoctorDetails(doctorId, date);
+                fetchProviderDetails(providerId, date);
             }
         } catch (err) {
             console.error("Booking error:", err);
-            setError("Something went wrong while booking. Please try again.");
+            setError("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -146,16 +149,16 @@ export const BookAppointment: React.FC = () => {
             </Box>
         );
 
-    if (!doctor) return null;
+    if (!provider) return null;
 
     return (
         <Box sx={{ p: 3 }}>
-            {/* Doctor Details */}
+            {/* Provider Details */}
             <Card sx={{ mb: 3, borderRadius: 3, boxShadow: 2 }}>
                 <CardContent>
-                    <Typography variant="h6">{doctor.name}</Typography>
-                    <Typography color="textSecondary">{doctor.specialization}</Typography>
-                    <Typography color="textSecondary">{doctor.clinicAddress}</Typography>
+                    <Typography variant="h6">{provider.name}</Typography>
+                    <Typography color="textSecondary">{provider.serviceCategory}</Typography>
+                    <Typography color="textSecondary">{provider.businessAddress}</Typography>
                 </CardContent>
             </Card>
 
@@ -171,47 +174,50 @@ export const BookAppointment: React.FC = () => {
             </Box>
 
             {/* Slot Selection */}
-            {
-                doctor.bookingSlotsType === "slots" && (
-                    <Box>
-                        <Typography variant="h6" gutterBottom>
-                            Select a Time Slot (Today)
-                        </Typography>
+            {provider.bookingSlotsType === "slots" && (
+                <Box>
+                    <Typography variant="h6" gutterBottom>
+                        Select a Time Slot
+                    </Typography>
 
-                        <RadioGroup value={selectedSlot} onChange={(e) => setSelectedSlot(e.target.value)}>
-                            <Grid container spacing={2}>
-                                {dailySlots.map((slot, idx) => {
-                                    const isBooked = bookedSlots.includes(slot);
-                                    return (
-                                        <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
-                                            <Button
-                                                variant={isBooked ? "outlined" : selectedSlot === slot ? "contained" : "outlined"}
-                                                color={isBooked ? "error" : "primary"}
-                                                fullWidth
-                                                disabled={isBooked}
-                                                onClick={() => !isBooked && setSelectedSlot(slot)}
-                                                sx={{
-                                                    textTransform: "none",
-                                                    fontWeight: isBooked ? 400 : 500,
-                                                    borderRadius: 2,
-                                                }}
-                                            >
-                                                {slot} {isBooked ? "(Booked)" : ""}
-                                            </Button>
-                                        </Grid>
-                                    );
-                                })}
-                            </Grid>
-                        </RadioGroup>
-                    </Box>)
-
-            }
+                    <RadioGroup
+                        value={selectedSlot}
+                        onChange={(e) => setSelectedSlot(e.target.value)}
+                    >
+                        <Grid container spacing={2}>
+                            {dailySlots.map((slot, idx) => {
+                                const isBooked = bookedSlots.includes(slot);
+                                return (
+                                    <Grid key={idx}  size={{xs:6, sm:4, md:3}}>
+                                        <Button
+                                            variant={
+                                                isBooked
+                                                    ? "outlined"
+                                                    : selectedSlot === slot
+                                                    ? "contained"
+                                                    : "outlined"
+                                            }
+                                            color={isBooked ? "error" : "primary"}
+                                            fullWidth
+                                            disabled={isBooked}
+                                            onClick={() => !isBooked && setSelectedSlot(slot)}
+                                            sx={{ textTransform: "none", borderRadius: 2 }}
+                                        >
+                                            {slot} {isBooked ? "(Booked)" : ""}
+                                        </Button>
+                                    </Grid>
+                                );
+                            })}
+                        </Grid>
+                    </RadioGroup>
+                </Box>
+            )}
 
             <Box sx={{ mt: 3 }}>
                 <Button
                     variant="contained"
                     color="primary"
-                    disabled={(doctor.bookingSlotsType === "slots" && !selectedSlot)}
+                    disabled={provider.bookingSlotsType === "slots" && !selectedSlot}
                     onClick={() => setOpenDialog(true)}
                 >
                     Proceed to Book
@@ -222,13 +228,23 @@ export const BookAppointment: React.FC = () => {
             </Box>
 
             {/* Notifications */}
-            <Snackbar open={!!error} autoHideDuration={3000} onClose={() => setError("")}>
+            <Snackbar
+                open={!!error}
+                autoHideDuration={3000}
+                onClose={() => setError("")}
+            >
                 <Alert severity="error">{error}</Alert>
             </Snackbar>
 
-            <Snackbar open={success} autoHideDuration={2000} onClose={() => setSuccess(false)}>
+            <Snackbar
+                open={success}
+                autoHideDuration={2000}
+                onClose={() => setSuccess(false)}
+            >
                 <Alert severity="success">Appointment booked successfully!</Alert>
             </Snackbar>
+
+            {/* Booking Dialog */}
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
                 <DialogTitle>Confirm Appointment</DialogTitle>
                 <DialogContent>
@@ -240,18 +256,19 @@ export const BookAppointment: React.FC = () => {
 
                     <TextField
                         fullWidth
-                        label="Patient Name"
-                        value={patientName}
-                        onChange={(e) => setPatientName(e.target.value)}
+                        label="Customer Name"
+                        value={clientName}
+                        onChange={(e) => setClientName(e.target.value)}
                     />
                     <p></p>
                     <TextField
                         fullWidth
-                        label="Patient Mobile Number"
-                        value={patientNumber}
-                        onChange={(e) => setPatientNumber(e.target.value)}
+                        label="Customer Contact Number"
+                        value={clientContact}
+                        onChange={(e) => setClientContact(e.target.value)}
                     />
                 </DialogContent>
+
                 <DialogActions>
                     <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
                     <Button

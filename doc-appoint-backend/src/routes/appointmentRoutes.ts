@@ -14,17 +14,17 @@ const router = Router();
 router.post("/", async (req: Request, res: Response) => {
   try {
     const {
-      doctorId,
-      patientName,
+      providerId,
+      clientName,
       appointmentDate,
       slot,
       bookingStatus,
       paymentStatus,
-      patientNumber,
+      clientContact,
       bookingSlotsType, // ✅ Added to handle logic based on type
     } = req.body;
 
-    if (!doctorId || !patientName || !appointmentDate || !patientNumber) {
+    if (!providerId || !clientName || !appointmentDate || !clientContact) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -40,20 +40,20 @@ router.post("/", async (req: Request, res: Response) => {
     if (bookingSlotsType !== "number") {
       // Slot-based: must check slot + other identifiers
       existing = await Appointment.findOne({
-        doctorId,
+        providerId,
         appointmentDate: { $gte: startOfDay, $lte: endOfDay },
         slot,
-        patientName,
-        patientNumber,
+        clientName,
+        clientContact,
         status: { $ne: "cancelled" },
       });
     } else {
       // Queue-based: only check doctor + patient + date
       existing = await Appointment.findOne({
-        doctorId,
+        providerId,
         appointmentDate: { $gte: startOfDay, $lte: endOfDay },
-        patientName,
-        patientNumber,
+        clientName,
+        clientContact,
         status: { $ne: "cancelled" },
       });
     }
@@ -69,31 +69,31 @@ router.post("/", async (req: Request, res: Response) => {
 
     // ✅ Get current max queue number for that doctor/date
     const latestAppointment = await Appointment.findOne({
-      doctorId,
+      providerId,
       appointmentDate: { $gte: startOfDay, $lte: endOfDay },
     })
-      .sort({ patientQueueNumber: -1 })
+      .sort({ queueNumber: -1 })
       .limit(1);
 
     let nextQueueNumber = 1;
     if (
       latestAppointment &&
-      typeof latestAppointment.patientQueueNumber === "number" &&
-      !isNaN(latestAppointment.patientQueueNumber)
+      typeof latestAppointment.queueNumber === "number" &&
+      !isNaN(latestAppointment.queueNumber)
     ) {
-      nextQueueNumber = latestAppointment.patientQueueNumber + 1;
+      nextQueueNumber = latestAppointment.queueNumber + 1;
     }
 
     // ✅ Create new appointment
     const newAppointment = new Appointment({
-      doctorId,
-      patientName,
-      patientNumber,
+      providerId,
+      clientName,
+      clientContact,
       appointmentDate,
       slot: bookingSlotsType !== "number" ? slot : undefined  , 
       bookingStatus: bookingStatus || "booked",
       paymentStatus: paymentStatus || "pending",
-      patientQueueNumber: nextQueueNumber,
+      queueNumber: nextQueueNumber,
     });
 
     await newAppointment.save();
@@ -109,10 +109,10 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 router.get("/", async (req, res) => {
-  const { doctorId, date } = req.query;
+  const { providerId, date } = req.query;
 
-  if (!doctorId || !date || typeof date !== "string") {
-      return res.status(400).json({ message: "doctorId and date are required" });
+  if (!providerId || !date || typeof date !== "string") {
+      return res.status(400).json({ message: "providerId and date are required" });
     }
 
   const start = new Date(date as string);
@@ -121,19 +121,19 @@ router.get("/", async (req, res) => {
   end.setHours(23, 59, 59, 999);
 
   const appointments = await Appointment.find({
-    doctorId,
+    providerId,
     appointmentDate: { $gte: start, $lte: end },
   });
   res.json({ appointments });
 });
 
-router.get("/doctor/:id",verifyToken, async (req: Request, res: Response) => {
+router.get("/provider/:id",verifyToken, async (req: Request, res: Response) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({ message: "Invalid doctor ID" });
+    return res.status(400).json({ message: "Invalid Provider ID" });
   }
 
-  const doctorId = new mongoose.Types.ObjectId(req.params.id);
-  const list = await Appointment.find({ doctor: doctorId })
+  const providerId = new mongoose.Types.ObjectId(req.params.id);
+  const list = await Appointment.find({ providerId: providerId })
     .populate("patient", "name phone")
     .sort({ startTime: 1 });
   res.json(list);
@@ -142,10 +142,10 @@ router.get("/doctor/:id",verifyToken, async (req: Request, res: Response) => {
 
 
 router.get("/booked-slots", async (req, res) => {
-  const { doctorId, date } = req.query;
+  const { providerId, date } = req.query;
 
-  if (!doctorId || !date) {
-    return res.status(400).json({ error: "doctorId and date are required" });
+  if (!providerId || !date) {
+    return res.status(400).json({ error: "providerId and date are required" });
   }
 
   try {
@@ -156,7 +156,7 @@ router.get("/booked-slots", async (req, res) => {
 
     // Fetch appointments for that doctor and date range
     const bookings = await Appointment.find({
-      doctorId,
+      providerId,
       appointmentDate: { $gte: startOfDay, $lte: endOfDay },
     });
 
@@ -173,12 +173,12 @@ router.get("/booked-slots", async (req, res) => {
 // Book a new appointment
 router.post("/book", async (req, res) => {
   try {
-    const { doctorId, userId, date, slot } = req.body;
+    const { providerId, userId, date, slot } = req.body;
 
-    const exists = await Appointment.findOne({ doctorId, date, slot });
+    const exists = await Appointment.findOne({ providerId, date, slot });
     if (exists) return res.status(400).json({ message: "Slot already booked" });
 
-    const newAppointment = new Appointment({ doctorId, userId, date, slot });
+    const newAppointment = new Appointment({ providerId, userId, date, slot });
     await newAppointment.save();
 
     res.status(200).json({ message: "Appointment booked successfully" });
@@ -187,12 +187,12 @@ router.post("/book", async (req, res) => {
   }
 });
 
-router.get("/:doctorId",verifyToken, async (req: Request, res: Response) => {
+router.get("/:providerId",verifyToken, async (req: Request, res: Response) => {
   try {
-    const { doctorId } = req.params;
+    const { providerId } = req.params;
     const { date } = req.query;
 
-    const query: any = { doctorId };
+    const query: any = { providerId };
     if (date) {
       const start = new Date(date as string);
       const end = new Date(date as string);

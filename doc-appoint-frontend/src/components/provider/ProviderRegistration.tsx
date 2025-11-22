@@ -19,7 +19,7 @@ const center = {
 };
 
 
-export const Doctor: React.FC = () => {
+export const ProviderRegistration: React.FC = () => {
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: REACT_APP_GOOGLE_MAP_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY",
@@ -59,7 +59,7 @@ export const Doctor: React.FC = () => {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "doctor",
+    role: "provider",
     specialization: "",
     clinicName: "",
     latitude: "",
@@ -68,6 +68,7 @@ export const Doctor: React.FC = () => {
     location: { lat: 12.9716, lng: 77.5946 },
     clinicAddress: "",
     clinicGeoLocation: "",
+    serviceType:"",
     availability: [
       { day: "Monday", slots: [{ start: "09:00", end: "17:00" }] },
       { day: "Tuesday", slots: [{ start: "09:00", end: "17:00" }] },
@@ -233,7 +234,7 @@ export const Doctor: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          role: "doctor",
+          role: "provider",
           latitude: Number(form.location.lat),
           longitude: Number(form.location.lng),
         }),
@@ -242,14 +243,14 @@ export const Doctor: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccessMsg("Doctor record created successfully!");
+        setSuccessMsg("Provider record created successfully!");
         setForm({
           name: "",
           email: "",
           phone: "",
           password: "",
           confirmPassword: "",
-          role: "doctor",
+          role: "provider",
           latitude: "",
           longitude: "",
           bookingSlotsType: "number",
@@ -258,6 +259,7 @@ export const Doctor: React.FC = () => {
           location: { lat: 12.9716, lng: 77.5946 },
           clinicAddress: "",
           clinicGeoLocation: "",
+          serviceType:"",
           availability: [
             { day: "Monday", slots: [{ start: "09:00", end: "17:00" }] },
             { day: "Tuesday", slots: [{ start: "09:00", end: "17:00" }] },
@@ -270,15 +272,15 @@ export const Doctor: React.FC = () => {
         });
         setSnackbar({
           open: true,
-          message: "Doctor record created successfully!",
+          message: "Provider record created successfully!",
           severity: "success",
         });
 
       } else {
-        setErrorMsg(data.message || "Failed to create doctor");
+        setErrorMsg(data.message || "Failed to create Provider Account");
         setSnackbar({
           open: true,
-          message: data.message || "Failed to create doctor",
+          message: data.message || "Failed to create Provider Account",
           severity: "error",
         });
       }
@@ -287,7 +289,7 @@ export const Doctor: React.FC = () => {
       setErrorMsg("Server error. Please try again later.");
       setSnackbar({
         open: true,
-        message: "Failed to create doctor",
+        message: "Failed to create Provider Account",
         severity: "error",
       });
     }
@@ -300,13 +302,41 @@ export const Doctor: React.FC = () => {
     <Box sx={{ p: 3, maxWidth: 500, mx: "auto" }}>
       {step === 1 && (
         <>
-          <h2>Create Doctor Record</h2>
+          <h2>Create Service Provider Record</h2>
           <TextField label="Name" name="name" value={form.name} onChange={handleChange} fullWidth margin="normal" error={!!errors.name} helperText={errors.name} />
           <TextField label="Email" name="email" value={form.email} onChange={handleChange} fullWidth margin="normal" error={!!errors.email} helperText={errors.email} />
 
           <TextField label="Phone" name="phone" value={form.phone} onChange={handleChange} fullWidth margin="normal" error={!!errors.phone} helperText={errors.phone} />
           <TextField label="Enter Passsword" name="password" type="password" value={form.password} onChange={handleChange} fullWidth margin="normal" error={!!errors.password} helperText={errors.password} />
           <TextField label="Confirm Password" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} fullWidth margin="normal" error={!!errors.confirmPassword} helperText={errors.confirmPassword} />
+           <FormControl fullWidth margin="normal">
+    <InputLabel id="service-type-label">Service Type</InputLabel>
+    <Select
+      labelId="service-type-label"
+      name="serviceType"
+      value={form.serviceType || ""}
+      label="Service Type"
+      onChange={handleChange}
+    >
+      <MenuItem value="doctor">Doctor</MenuItem>
+      <MenuItem value="lawyer">Lawyer</MenuItem>
+      <MenuItem value="pharmacy">Pharmacy</MenuItem>
+      <MenuItem value="saloon">Saloon</MenuItem>
+      <MenuItem value="other">Other</MenuItem>
+    </Select>
+  </FormControl>
+
+  {/* ✅ Specialization only for Doctors */}
+  <TextField
+      label="Specialization (Optional)"
+      name="specialization"
+      value={form.specialization}
+      onChange={handleChange}
+      fullWidth
+      margin="normal"
+      error={!!errors.specialization}
+      helperText={errors.specialization}
+    />
           <TextField label="specialization" name="specialization" value={form.specialization} onChange={handleChange} fullWidth margin="normal" error={!!errors.specialization} helperText={errors.specialization} />
           <TextField label="Clinic Name" name="clinicName" value={form.clinicName} onChange={handleChange} fullWidth margin="normal" error={!!errors.clinicName} helperText={errors.clinicName} />
           <TextField label="Clinic Address" name="clinicAddress" value={form.clinicAddress} onChange={handleChange} fullWidth margin="normal" error={!!errors.clinicAddress} helperText={errors.clinicAddress} />

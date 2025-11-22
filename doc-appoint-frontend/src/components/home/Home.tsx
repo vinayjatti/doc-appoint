@@ -1,4 +1,4 @@
-import { LocalHospital, LocationOn, PersonAdd } from "@mui/icons-material";
+import { BusinessCenter, LocationOn, PersonAdd } from "@mui/icons-material";
 import { Box, Button, Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,9 +6,9 @@ import { useNavigate } from "react-router-dom";
 export const Home: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleSearchDoctors = () => navigate("/searchDoctor");
-  const handleSearchClinics = () => navigate("/searchPharmacy");
-  const handleRegister = () => navigate("/doctors");
+  const handleSearchProviders = () => navigate("/searchProvider");
+  const handleSearchLocations = () => navigate("/searchLocation");
+  const handleRegister = () => navigate("/providers");
 
   return (
     <Box
@@ -22,10 +22,10 @@ export const Home: React.FC = () => {
       {/* Title Section */}
       <Box textAlign="center" mb={5}>
         <Typography variant="h4" fontWeight="bold" color="primary">
-          Welcome to MediChamp
+          Welcome to AppointmentHub
         </Typography>
         <Typography variant="subtitle1" color="text.secondary">
-          Your one-stop solution for finding doctors and managing appointments.
+          Your one-stop platform to find service providers and book appointments easily.
         </Typography>
       </Box>
 
@@ -37,8 +37,8 @@ export const Home: React.FC = () => {
         alignItems="stretch"
         sx={{ mb: 5 }}
       >
-        {/* Card 1 - Search Doctors */}
-        <Grid size={{xs: 12, sm: 6, md: 4}}>
+        {/* Card 1 - Search Providers */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card
             sx={{
               textAlign: "center",
@@ -51,26 +51,26 @@ export const Home: React.FC = () => {
             }}
           >
             <CardContent>
-              <LocalHospital sx={{ fontSize: 60, color: "#1976d2" }} />
+              <BusinessCenter sx={{ fontSize: 60, color: "#1976d2" }} />
               <Typography variant="h5" gutterBottom>
-                Search Doctors Near Me
+                Find Service Providers
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Find experienced doctors based on your location and specialty.
+                Search professionals across different services near you.
               </Typography>
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleSearchDoctors}
+                onClick={handleSearchProviders}
               >
-                Find Doctors
+                Search Providers
               </Button>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Card 2 - Search Clinics */}
-        <Grid  size={{xs: 12, sm: 6, md: 4}}>
+        {/* Card 2 - Search Locations */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card
             sx={{
               textAlign: "center",
@@ -85,17 +85,17 @@ export const Home: React.FC = () => {
             <CardContent>
               <LocationOn sx={{ fontSize: 60, color: "#2e7d32" }} />
               <Typography variant="h5" gutterBottom>
-                Search Pharmacy Near Me
+                Search Nearby Locations
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Locate nearby Pharmacy 
+                Discover nearby businesses offering appointment-based services.
               </Typography>
               <Button
                 variant="contained"
                 color="success"
-                onClick={handleSearchClinics}
+                onClick={handleSearchLocations}
               >
-                Find Pharmacy
+                Find Locations
               </Button>
             </CardContent>
           </Card>
@@ -116,16 +116,12 @@ export const Home: React.FC = () => {
         >
           <PersonAdd sx={{ fontSize: 60, color: "#ff9800", mb: 1 }} />
           <Typography variant="h5" gutterBottom>
-            Are you a Doctor or Clinic?
+            Are you a Service Provider?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Register yourself and help patients find your services easily.
+            Register your services and let customers book appointments seamlessly.
           </Typography>
-          <Button
-            variant="contained"
-            color="warning"
-            onClick={handleRegister}
-          >
+          <Button variant="contained" color="warning" onClick={handleRegister}>
             Register Now
           </Button>
         </Card>

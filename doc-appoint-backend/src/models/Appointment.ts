@@ -1,56 +1,54 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
+
 export interface IAppointment extends Document {
-  doctorId: mongoose.Types.ObjectId;
-  patientName: string;
-  patientNumber: string;
+  providerId: mongoose.Types.ObjectId;        // Replaces doctorId
+  clientName: string;                         // Replaces patientName
+  clientContact: string;                      // Replaces patientNumber
+
   appointmentDate: Date;
-  slot?: string; // e.g., "10:00 AM - 10:30 AM"
+  slot?: string;
+
   bookingStatus: "booked" | "completed" | "cancelled";
   paymentStatus: "paid" | "pending" | "failed";
+
+  queueNumber: number;                         // Replaces patientQueueNumber
+
   createdAt: Date;
   updatedAt: Date;
-  patientQueueNumber: number; // Optional queue number
+
+  serviceId?: string | mongoose.Types.ObjectId; // NEW: generic service
 }
 
 const AppointmentSchema: Schema = new Schema<IAppointment>(
   {
-    doctorId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    patientName: {
-      type: String,
-      required: true,
-    },
-    patientNumber: {
-      type: String,
-      required: true,
-    },
-    patientQueueNumber: {
-      type: Number,
-      required: true,
-    },
-    appointmentDate: {
-      type: Date,
-      required: true,
-    },
-    slot: {
-      type: String,
-      required: false,
-    },
+    providerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+
+    clientName: { type: String, required: true },
+    clientContact: { type: String, required: true },
+
+    queueNumber: { type: Number, required: true },
+
+    appointmentDate: { type: Date, required: true },
+    slot: { type: String },
+
     bookingStatus: {
       type: String,
       enum: ["booked", "completed", "cancelled"],
       default: "booked",
     },
+
     paymentStatus: {
       type: String,
       enum: ["paid", "pending", "failed"],
       default: "pending",
     },
+
+    serviceId: { type: Schema.Types.Mixed }, // optional
   },
   { timestamps: true }
 );
 
-export const Appointment = mongoose.model<IAppointment>("Appointment", AppointmentSchema);
+export const Appointment = mongoose.model<IAppointment>(
+  "Appointment",
+  AppointmentSchema
+);

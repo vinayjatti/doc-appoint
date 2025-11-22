@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useDoctorStore } from "../../store/useDoctorStore";
 import { BASE_URL } from "../../utils/constants";
 
-const DoctorLogin: React.FC = () => {
+const ProviderLogin: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [snackbar, setSnackbar] = useState({
@@ -172,4 +172,4 @@ const DoctorLogin: React.FC = () => {
   );
 };
 
-export default DoctorLogin;
+export default ProviderLogin;
