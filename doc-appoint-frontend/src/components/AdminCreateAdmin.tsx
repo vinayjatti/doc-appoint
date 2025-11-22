@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useDoctorStore } from "../store/useDoctorStore";
+import { useProviderStore } from "../store/useProviderStore";
 import { TextField, Button, Box, Typography, Alert } from "@mui/material";
 import { BASE_URL } from "../utils/constants";
 
 export const AdminCreateAdmin: React.FC = () => {
   const [form, setForm] = useState({ name: "", phone: "", email: "", password: "", role: "admin" });
   const [message, setMessage] = useState("");
-  const { token } = useDoctorStore();
+  const { token } = useProviderStore();
 
   // Restrict non-admins from seeing the page
   if (!token) {

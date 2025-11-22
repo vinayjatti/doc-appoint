@@ -92,18 +92,18 @@ router.post("/register", async (req, res) => {
 
     const emailVerificationToken = crypto.randomBytes(32).toString("hex");
 
-    const doctor = new User({
+    const provider = new User({
       name,
       email,
       phone,
       password,
-      role: "doctor",
+      role: "provider",
       specialization,
       clinicName,
       clinicAddress,
       emailVerificationToken,
     });
-    await doctor.save();
+    await provider.save();
 
     // ✉️ Send verification email
     const transporter = nodemailer.createTransport({
@@ -127,45 +127,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/send-otp-email", async (req, res) => {
-  try {
-    const { email, name } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
-
-    let user = await User.findOne({ email });
-    if (!user) {
-      user = new User({ name, email, role: "doctor" });
-    }
-
-    user.otp = otp;
-    user.otpExpiry = otpExpiry;
-    await user.save();
-
-    // ✅ Send OTP Email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER, // Your Gmail
-        pass: process.env.EMAIL_PASS, // App password
-      },
-    });
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Doctor Registration OTP",
-      text: `Dear ${name || "Doctor"}, your OTP for registration is ${otp}. It is valid for 10 minutes.`,
-    });
-
-    res.json({ message: "OTP sent successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to send OTP" });
-  }
-});
 
 // 🔹 Verify OTP and Register Doctor
 router.post("/verify-otp-email", async (req, res) => {
@@ -202,11 +163,11 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
 
     // Find doctor
-    const doctor = await User.findOne({ email });
-    if (!doctor)
+    const provider = await User.findOne({ email });
+    if (!provider)
       return res.status(401).json({ message: "Invalid email or password" });
 
-    const userAuth = await UserAuth.findOne({ userId: doctor._id });
+    const userAuth = await UserAuth.findOne({ userId: provider._id });
     if (!userAuth) return res.status(401).json({ message: "Authentication data missing" });
 
     // Check password
@@ -216,7 +177,7 @@ router.post("/login", async (req, res) => {
 
     // ✅ Generate JWT Token
     const token = jwt.sign(
-      { id: doctor._id, email: doctor.email, role: doctor.role },
+      { id: provider._id, email: provider.email, role: provider.role },
       process.env.JWT_SECRET || "defaultsecret",
       { expiresIn: "1d" }
     );
@@ -225,11 +186,11 @@ router.post("/login", async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      doctorId: doctor._id,
-      doctorName: doctor.name,
-      doctorEmail: doctor.email,
-      bookingSlotsType: doctor.bookingSlotsType,
-      role: doctor.role,
+      providerId: provider._id,
+      providerName: provider.name,
+      doctorEmail: provider.email,
+      bookingSlotsType: provider.bookingSlotsType,
+      role: provider.role,
     });
   } catch (err) {
     console.error("Login error:", err);

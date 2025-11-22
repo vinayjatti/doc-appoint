@@ -29,7 +29,7 @@ import MyAppointments from "./components/provider/MyAppointments";
 import ProviderLogin from "./components/provider/ProviderLogin";           // rename later to ProviderLogin
 import ProtectedRoute from "./components/ProtectedRoute";
 
-import { useDoctorStore } from "./store/useDoctorStore";
+import { useProviderStore } from "./store/useProviderStore";
 import { clearSession, isSessionValid } from "./utils/Session";
 import { AdminCreateAdmin } from "./components/AdminCreateAdmin";
 import { UserProfileUpdate } from "./components/provider/UserProfileUpdate";
@@ -43,7 +43,7 @@ import logo from "./assets/medichamp.png"; // replace logo later with generic na
 const App: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
-  const { doctorName: providerName, logout, userRole } = useDoctorStore();
+  const { providerName: providerName, logout, userRole } = useProviderStore();
 
   useEffect(() => {
     if (!isSessionValid()) {
@@ -88,7 +88,7 @@ const App: React.FC = () => {
                 textTransform: "uppercase",
               }}
             >
-              AppointmentHub
+              Appointment Hub
             </Typography>
           </Box>
 

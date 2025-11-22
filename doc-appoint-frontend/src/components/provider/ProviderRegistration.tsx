@@ -68,7 +68,7 @@ export const ProviderRegistration: React.FC = () => {
     location: { lat: 12.9716, lng: 77.5946 },
     clinicAddress: "",
     clinicGeoLocation: "",
-    serviceType:"",
+    serviceType: "",
     availability: [
       { day: "Monday", slots: [{ start: "09:00", end: "17:00" }] },
       { day: "Tuesday", slots: [{ start: "09:00", end: "17:00" }] },
@@ -259,7 +259,7 @@ export const ProviderRegistration: React.FC = () => {
           location: { lat: 12.9716, lng: 77.5946 },
           clinicAddress: "",
           clinicGeoLocation: "",
-          serviceType:"",
+          serviceType: "",
           availability: [
             { day: "Monday", slots: [{ start: "09:00", end: "17:00" }] },
             { day: "Tuesday", slots: [{ start: "09:00", end: "17:00" }] },
@@ -309,34 +309,34 @@ export const ProviderRegistration: React.FC = () => {
           <TextField label="Phone" name="phone" value={form.phone} onChange={handleChange} fullWidth margin="normal" error={!!errors.phone} helperText={errors.phone} />
           <TextField label="Enter Passsword" name="password" type="password" value={form.password} onChange={handleChange} fullWidth margin="normal" error={!!errors.password} helperText={errors.password} />
           <TextField label="Confirm Password" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} fullWidth margin="normal" error={!!errors.confirmPassword} helperText={errors.confirmPassword} />
-           <FormControl fullWidth margin="normal">
-    <InputLabel id="service-type-label">Service Type</InputLabel>
-    <Select
-      labelId="service-type-label"
-      name="serviceType"
-      value={form.serviceType || ""}
-      label="Service Type"
-      onChange={handleChange}
-    >
-      <MenuItem value="doctor">Doctor</MenuItem>
-      <MenuItem value="lawyer">Lawyer</MenuItem>
-      <MenuItem value="pharmacy">Pharmacy</MenuItem>
-      <MenuItem value="saloon">Saloon</MenuItem>
-      <MenuItem value="other">Other</MenuItem>
-    </Select>
-  </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="service-type-label">Service Type</InputLabel>
+            <Select
+              labelId="service-type-label"
+              name="serviceType"
+              value={form.serviceType || ""}
+              label="Service Type"
+              onChange={handleChange}
+            >
+              <MenuItem value="doctor">Doctor</MenuItem>
+              <MenuItem value="lawyer">Lawyer</MenuItem>
+              <MenuItem value="pharmacy">Pharmacy</MenuItem>
+              <MenuItem value="saloon">Saloon</MenuItem>
+              <MenuItem value="other">Other</MenuItem>
+            </Select>
+          </FormControl>
 
-  {/* ✅ Specialization only for Doctors */}
-  <TextField
-      label="Specialization (Optional)"
-      name="specialization"
-      value={form.specialization}
-      onChange={handleChange}
-      fullWidth
-      margin="normal"
-      error={!!errors.specialization}
-      helperText={errors.specialization}
-    />
+          {/* ✅ Specialization only for Doctors */}
+          <TextField
+            label="Specialization (Optional)"
+            name="specialization"
+            value={form.specialization}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            error={!!errors.specialization}
+            helperText={errors.specialization}
+          />
           <TextField label="specialization" name="specialization" value={form.specialization} onChange={handleChange} fullWidth margin="normal" error={!!errors.specialization} helperText={errors.specialization} />
           <TextField label="Clinic Name" name="clinicName" value={form.clinicName} onChange={handleChange} fullWidth margin="normal" error={!!errors.clinicName} helperText={errors.clinicName} />
           <TextField label="Clinic Address" name="clinicAddress" value={form.clinicAddress} onChange={handleChange} fullWidth margin="normal" error={!!errors.clinicAddress} helperText={errors.clinicAddress} />
@@ -344,7 +344,7 @@ export const ProviderRegistration: React.FC = () => {
             <InputLabel id="booking-type-label">Booking Type</InputLabel>
             <Select
               labelId="booking-type-label"
-              name="bookingSlotType"
+              name="bookingSlotsType"
               value={form.bookingSlotsType || ""}
               label="Booking Type"
               onChange={handleChange}

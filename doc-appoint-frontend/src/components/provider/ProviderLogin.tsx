@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useDoctorStore } from "../../store/useDoctorStore";
+import { useProviderStore } from "../../store/useProviderStore";
 import { BASE_URL } from "../../utils/constants";
 
 const ProviderLogin: React.FC = () => {
@@ -24,7 +24,7 @@ const ProviderLogin: React.FC = () => {
     severity: "info",
   });
   const navigate = useNavigate();
-  const { setDoctor } = useDoctorStore();
+  const { setProvider } = useProviderStore();
 
   // ✅ Handle Login
   const handleLogin = async () => {
@@ -54,9 +54,9 @@ const ProviderLogin: React.FC = () => {
       const loginTime = new Date().getTime();
       const sessionDuration = 1 * 60 * 60 * 1000;
 
-      setDoctor({
-        doctorName: res.data.doctorName,
-        doctorId: res.data.doctorId,
+      setProvider({
+        providerName: res.data.providerName,
+        providerId: res.data.providerId,
         token: res.data.token,
         loginTime: loginTime.toString(),
         sessionDuration: sessionDuration.toString(),
@@ -64,7 +64,7 @@ const ProviderLogin: React.FC = () => {
         userRole: res.data.role,
       });
 
-      navigate("/my-appointments");
+      navigate("/appointments");
     } catch (err: any) {
       setSnackbar({
         open: true,

@@ -20,19 +20,19 @@ import { AllCommunityModule, ModuleRegistry, themeQuartz } from "ag-grid-communi
 // Core CSS
 import { AgGridReact } from "ag-grid-react";
 import { BASE_URL } from "../../utils/constants";
-import { useDoctorStore } from "../../store/useDoctorStore";
+import { useProviderStore } from "../../store/useProviderStore";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface Appointment {
     _id: string;
-    patientName: string;
-    patientNumber: string;
+    clientName: string;
+    clientContact: string;
     appointmentDate: string;
     slot?: string;
     bookingStatus?: string;
     paymentStatus?: string;
-    patientQueueNumber?: number;
+    queueNumber?: number;
 }
 
 interface Doctor {
@@ -50,7 +50,7 @@ const MyAppointments: React.FC = () => {
     const [selectedRows, setSelectedRows] = useState<Appointment[]>([]);
     const [bookingStatus, setBookingStatus] = useState("");
     const [paymentStatus, setPaymentStatus] = useState("");
-    const { doctorId, doctorName, token,bookingSlotsType } = useDoctorStore();
+    const { providerId, providerName, token,bookingSlotsType } = useProviderStore();
 
 
     const myTheme = themeQuartz.withParams({
@@ -81,8 +81,8 @@ const MyAppointments: React.FC = () => {
             width: 50,
             pinned: "left",
         },
-        { headerName: "Patient Name", field: "patientName", flex: 1 },
-        { headerName: "Number", field: "patientNumber", flex: 1 },
+        { headerName: "Patient Name", field: "clientName", flex: 1 },
+        { headerName: "Number", field: "clientContact", flex: 1 },
        
         {
             headerName: "Booking Status",
@@ -120,7 +120,7 @@ const MyAppointments: React.FC = () => {
 
     ]
     if (bookingSlotsType === "number") {
-        cols.push({ headerName: "Queue Number", field: "patientQueueNumber", flex: 1 });
+        cols.push({ headerName: "Queue Number", field: "queueNumber", flex: 1 });
     } else {
         cols.push({ headerName: "Slots booked", field: "slot", flex: 1 });
     }
@@ -135,7 +135,7 @@ const MyAppointments: React.FC = () => {
     }), []);
 
     useEffect(() => {
-        if (!doctorId) {
+        if (!providerId) {
             setError("Doctor not logged in. Please log in again.");
             return;
         }
@@ -143,7 +143,7 @@ const MyAppointments: React.FC = () => {
         const fetchDoctor = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get(`${BASE_URL}/api/users/user/${doctorId}`, {
+                const res = await axios.get(`${BASE_URL}/api/users/user/${providerId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -172,7 +172,7 @@ const MyAppointments: React.FC = () => {
             setError("");
 
             const res = await axios.get(
-                `${BASE_URL}/api/appointments?doctorId=${doctor._id}&date=${appointmentDate}`
+                `${BASE_URL}/api/appointments?providerId=${doctor._id}&date=${appointmentDate}`
             );
             setAppointments(res.data.appointments || []);
         } catch (err: any) {

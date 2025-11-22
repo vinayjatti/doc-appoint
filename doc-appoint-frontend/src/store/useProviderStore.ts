@@ -1,16 +1,16 @@
 import { create } from "zustand";
 
-interface DoctorState {
-  doctorName: string | null;
-  doctorId: string | null;
+interface ProviderState {
+  providerName: string | null;
+  providerId: string | null;
   token: string | null;
   loginTime?: string | null;
   sessionDuration?: string | null;
   bookingSlotsType?: string | null;
   userRole?: string | null;
-  setDoctor: (data: {
-    doctorName: string;
-    doctorId: string;
+  setProvider: (data: {
+    providerName: string;
+    providerId: string;
     token: string;
     loginTime: string;
     sessionDuration: string;
@@ -20,26 +20,26 @@ interface DoctorState {
   logout: () => void;
 }
 
-export const useDoctorStore = create<DoctorState>((set) => ({
-  doctorName: localStorage.getItem("doctorName"),
-  doctorId: localStorage.getItem("doctorId"),
+export const useProviderStore = create<ProviderState>((set) => ({
+  providerName: localStorage.getItem("providerName"),
+  providerId: localStorage.getItem("providerId"),
   token: localStorage.getItem("doctorToken"),
   loginTime: localStorage.getItem("loginTime"),
   sessionDuration: localStorage.getItem("sessionDuration"),
   bookingSlotsType: localStorage.getItem("bookingSlotsType"),
   userRole: localStorage.getItem("userRole"),
 
-  setDoctor: ({
-    doctorName,
-    doctorId,
+  setProvider: ({
+    providerName,
+    providerId,
     token,
     loginTime,
     sessionDuration,
     bookingSlotsType,
     userRole
   }) => {
-    localStorage.setItem("doctorName", doctorName);
-    localStorage.setItem("doctorId", doctorId);
+    localStorage.setItem("providerName", providerName);
+    localStorage.setItem("providerId", providerId);
     localStorage.setItem("doctorToken", token);
     localStorage.setItem("loginTime", loginTime);
     localStorage.setItem("sessionDuration", sessionDuration);
@@ -47,8 +47,8 @@ export const useDoctorStore = create<DoctorState>((set) => ({
     localStorage.setItem("userRole", userRole || "user");
 
     set({
-      doctorName,
-      doctorId,
+      providerName,
+      providerId,
       token,
       loginTime,
       sessionDuration,
@@ -60,8 +60,8 @@ export const useDoctorStore = create<DoctorState>((set) => ({
   logout: () => {
     localStorage.clear();
     set({
-      doctorName: null,
-      doctorId: null,
+      providerName: null,
+      providerId: null,
       token: null,
       loginTime: null,
       sessionDuration: null,

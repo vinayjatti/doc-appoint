@@ -9,7 +9,7 @@ import {
     CircularProgress,
     Grid,
 } from "@mui/material";
-import { useDoctorStore } from "../../store/useDoctorStore";
+import { useProviderStore } from "../../store/useProviderStore";
 import { Autocomplete, GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import { BASE_URL, REACT_APP_GOOGLE_MAP_API_KEY } from "../../utils/constants";
 
@@ -24,7 +24,7 @@ export const UserProfileUpdate: React.FC = () => {
         height: "300px",
     };
 
-    const { token, doctorId } = useDoctorStore();
+    const { token, providerId } = useProviderStore();
     const mapRef = useRef<google.maps.Map | null>(null);
 
     const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
@@ -38,7 +38,7 @@ export const UserProfileUpdate: React.FC = () => {
         clinicAddress: "",
         clinicGeoLocation: "",
         location: { lat: 12.9716, lng: 77.5946 },
-        doctorId: doctorId,
+        providerId: providerId,
     });
 
     const [message, setMessage] = useState("");
@@ -87,7 +87,7 @@ export const UserProfileUpdate: React.FC = () => {
         const fetchProfile = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get(`${BASE_URL}/api/users/user/${doctorId}`, {
+                const res = await axios.get(`${BASE_URL}/api/users/user/${providerId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -109,7 +109,7 @@ export const UserProfileUpdate: React.FC = () => {
                     clinicAddress: clinicAddress || "",
                     clinicGeoLocation: clinicGeoLocation || "",
                     location: location || { lat: 12.9716, lng: 77.5946 },
-                    doctorId,
+                    providerId,
                 });
             } catch (err) {
                 console.error(err);
