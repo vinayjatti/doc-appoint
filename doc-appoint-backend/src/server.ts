@@ -31,6 +31,17 @@ app.use("/api/users",UserSelectionRoutes);
 app.use("/api/auth",auth);
 app.use("/api/account",UserAccountManageRoutes);
 
-const PORT = process.env.PORT || 4000;
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date(),
+  });
+});
+
+const PORT = Number(process.env.PORT) || 8080;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});

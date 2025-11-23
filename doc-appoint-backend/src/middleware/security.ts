@@ -5,6 +5,7 @@ import { Express } from "express";
 // Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:3000",        // local React app
+  "http://localhost:8080", 
   "https://yourdomain.com",       // production frontend
   "https://staging.yourdomain.com"
 ];
