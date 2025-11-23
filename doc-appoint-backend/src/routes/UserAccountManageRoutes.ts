@@ -4,6 +4,7 @@ import { User } from "../models/User";
 import bcrypt from "bcryptjs";
 import { UserAuth } from "../models/UserAuth";
 import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 
@@ -54,6 +55,8 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
+
+
 /* ------------------------------------------
    2️⃣  Verify OTP Code
 ------------------------------------------- */
@@ -64,13 +67,29 @@ router.post("/verify-code", async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ message: "Invalid email" });
 
-    if (!user.resetCode || user.resetCode !== code)
+    if (!user.otp || user.otp !== code)
       return res.status(400).json({ message: "Invalid verification code" });
 
-    if (user.resetCodeExpires && user.resetCodeExpires < Date.now())
+    if (user.otpExpiry && user.otpExpiry.getTime() < Date.now())
       return res.status(400).json({ message: "Code expired" });
 
-    return res.json({ message: "Code verified" });
+    const token = jwt.sign(
+          { id: user._id, email: user.email, role: user.role },
+          process.env.JWT_SECRET || "defaultsecret",
+          { expiresIn: "1d" }
+        );
+    
+        // ✅ Send token + doctor ID
+        return res.status(200).json({
+          message: "Login successful",
+          token,
+          providerId: user._id,
+          providerName: user.name,
+          providerEmail: user.email,
+          bookingSlotsType: user.bookingSlotsType,
+          role: user.role,
+        });
+
   } catch (err) {
     res.status(500).json({ message: "Verification error" });
   }

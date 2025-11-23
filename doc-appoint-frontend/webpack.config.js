@@ -1,11 +1,13 @@
 // filepath: /f:/softwares/doc-appoint/frontend/webpack.config.js
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin'); 
 
 module.exports = {
   entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
+    publicPath: '/',  
   },
   target: 'web',
   module: {
@@ -28,6 +30,12 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },
+  plugins: [
+  new HtmlWebpackPlugin({
+    template: './public/index.html', // your HTML template
+    filename: 'index.html'
+  })
+],
   devServer: {
     static: {
       directory: path.join(__dirname, 'public'),

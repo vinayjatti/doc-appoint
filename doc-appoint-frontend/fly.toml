@@ -1,0 +1,21 @@
+# fly.toml app configuration file generated for doc-appoint-frontend on 2025-11-23T16:43:20+05:30
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'doc-appoint-frontend'
+primary_region = 'bom'
+
+[build]
+  dockerfile = "Dockerfile"
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

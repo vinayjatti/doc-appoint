@@ -7,7 +7,8 @@ const allowedOrigins = [
   "http://localhost:3000",        // local React app
   "http://localhost:8080", 
   "https://yourdomain.com",       // production frontend
-  "https://staging.yourdomain.com"
+  "https://staging.yourdomain.com",
+  "https://doc-appoint-frontend.fly.dev"
 ];
 
 export const applySecurityMiddleware = (app: Express): void => {

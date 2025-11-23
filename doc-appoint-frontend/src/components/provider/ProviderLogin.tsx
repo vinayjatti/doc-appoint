@@ -17,72 +17,95 @@ import { BASE_URL } from "../../utils/constants";
 
 const ProviderLogin: React.FC = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"email" | "otp">("email");
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "info",
   });
+
   const navigate = useNavigate();
   const { setProvider } = useProviderStore();
 
-  // ✅ Handle Login
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setSnackbar({
+  // ----------------------------------------------------
+  // STEP 1 → Send OTP
+  // ----------------------------------------------------
+  const sendOtp = async () => {
+    if (!email) {
+      return setSnackbar({
         open: true,
-        message: "Please enter both email and password",
+        message: "Please enter email",
         severity: "warning",
       });
-      return;
     }
 
     try {
-      const res = await axios.post(BASE_URL+ "/api/auth/login", {
-        email,
-        password,
-      });
+      await axios.post(BASE_URL + "/api/account/send-otp-email", { email });
 
-
-      // ✅ On success
       setSnackbar({
         open: true,
-        message: "Login successful!",
+        message: "OTP sent to your email",
         severity: "success",
       });
 
+      setStep("otp");
+    } catch (err: any) {
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || "Failed to send OTP",
+        severity: "error",
+      });
+    }
+  };
+
+  // ----------------------------------------------------
+  // STEP 2 → Verify OTP
+  // ----------------------------------------------------
+  const verifyOtp = async () => {
+    if (!otp) {
+      return setSnackbar({
+        open: true,
+        message: "Please enter OTP",
+        severity: "warning",
+      });
+    }
+
+    try {
+      const res = await axios.post(BASE_URL + "/api/account/verify-code", {
+        email,
+        code: otp,
+      });
+
+      // OTP Verified → Now fetch provider details OR auto-login
       const loginTime = new Date().getTime();
       const sessionDuration = 1 * 60 * 60 * 1000;
 
-      setProvider({
+      // save provider data (basic for now)
+      setProvider({ 
         providerName: res.data.providerName,
-        providerId: res.data.providerId,
-        token: res.data.token,
-        loginTime: loginTime.toString(),
-        sessionDuration: sessionDuration.toString(),
-        bookingSlotsType: res.data.bookingSlotsType,
-        userRole: res.data.role,
+         providerId: res.data.providerId, 
+         token: res.data.token, 
+         loginTime: loginTime.toString(), 
+         sessionDuration: sessionDuration.toString(),
+          bookingSlotsType: res.data.bookingSlotsType, 
+          userRole: res.data.role, });
+
+      setSnackbar({
+        open: true,
+        message: "OTP verified! Redirecting...",
+        severity: "success",
       });
 
       navigate("/appointments");
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Invalid credentials",
+        message: err.response?.data?.message || "Invalid OTP",
         severity: "error",
       });
     }
-  };
-
-  // ✅ Clear all fields
-  const handleClear = () => {
-    setEmail("");
-    setPassword("");
-  };
-
-  // ✅ Navigate to Forgot Password page
-  const handleForgotPassword = () => {
-    navigate("/forgot-password");
   };
 
   return (
@@ -103,56 +126,66 @@ const ProviderLogin: React.FC = () => {
           Doctor Login
         </Typography>
 
-        <TextField
-          fullWidth
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          margin="normal"
-          required
-        />
+        {/* STEP 1: ENTER EMAIL */}
+        {step === "email" && (
+          <>
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              margin="normal"
+              required
+            />
 
-        <TextField
-          fullWidth
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          margin="normal"
-          required
-        />
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={sendOtp}
+            >
+              Send OTP
+            </Button>
+          </>
+        )}
 
-        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            onClick={handleLogin}
-          >
-            Sign In
-          </Button>
+        {/* STEP 2: ENTER OTP */}
+        {step === "otp" && (
+          <>
+            <Typography textAlign="center" sx={{ mb: 1 }}>
+              OTP is sent to <strong>{email}</strong>
+            </Typography>
+            <TextField
+              fullWidth
+              label="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              margin="normal"
+              required
+            />
 
-          <Button
-            fullWidth
-            variant="outlined"
-            color="secondary"
-            onClick={handleClear}
-          >
-            Clear
-          </Button>
-        </Stack>
+            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={verifyOtp}
+              >
+                Verify OTP
+              </Button>
 
-        <Box textAlign="center" mt={2}>
-          <Link
-            component="button"
-            variant="body2"
-            underline="hover"
-            onClick={handleForgotPassword}
-          >
-            Forgot Password?
-          </Link>
-        </Box>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => setStep("email")}
+              >
+                Edit Email
+              </Button>
+            </Stack>
+          </>
+        )}
 
         <Snackbar
           open={snackbar.open}
