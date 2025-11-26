@@ -61,12 +61,12 @@ export const ProviderRegistration: React.FC = () => {
     confirmPassword: "",
     role: "provider",
     specialization: "",
-    clinicName: "",
+    orgName: "",
     latitude: "",
     longitude: "",
     bookingSlotsType: "number",
     location: { lat: 12.9716, lng: 77.5946 },
-    clinicAddress: "",
+    orgAddress: "",
     clinicGeoLocation: "",
     serviceType: "",
     availability: [
@@ -100,20 +100,20 @@ export const ProviderRegistration: React.FC = () => {
         if (!/^[0-9]{10}$/.test(value))
           error = "Phone number must be 10 digits.";
         break;
-      case "password":
-        if (value.length < 8)
-          error = "Password must be at least 8 characters.";
-        break;
-      case "confirmPassword":
-        if (value !== form.password) error = "Passwords do not match.";
-        break;
-      case "specialization":
-        if (!value.trim()) error = "Specialization is required.";
-        break;
-      case "clinicName":
+      // case "password":
+      //   if (value.length < 8)
+      //     error = "Password must be at least 8 characters.";
+      //   break;
+      // case "confirmPassword":
+      //   if (value !== form.password) error = "Passwords do not match.";
+      //   break;
+      // case "specialization":
+      //   if (!value.trim()) error = "Specialization is required.";
+      //   break;
+      case "orgName":
         if (!value.trim()) error = "Clinic name is required.";
         break;
-      case "clinicAddress":
+      case "orgAddress":
         if (!value.trim()) error = "Clinic address is required.";
         break;
       case "bookingSlotsType":
@@ -255,9 +255,9 @@ export const ProviderRegistration: React.FC = () => {
           longitude: "",
           bookingSlotsType: "number",
           specialization: "",
-          clinicName: "",
+          orgName: "",
           location: { lat: 12.9716, lng: 77.5946 },
-          clinicAddress: "",
+          orgAddress: "",
           clinicGeoLocation: "",
           serviceType: "",
           availability: [
@@ -307,8 +307,6 @@ export const ProviderRegistration: React.FC = () => {
           <TextField label="Email" name="email" value={form.email} onChange={handleChange} fullWidth margin="normal" error={!!errors.email} helperText={errors.email} />
 
           <TextField label="Phone" name="phone" value={form.phone} onChange={handleChange} fullWidth margin="normal" error={!!errors.phone} helperText={errors.phone} />
-          <TextField label="Enter Passsword" name="password" type="password" value={form.password} onChange={handleChange} fullWidth margin="normal" error={!!errors.password} helperText={errors.password} />
-          <TextField label="Confirm Password" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} fullWidth margin="normal" error={!!errors.confirmPassword} helperText={errors.confirmPassword} />
           <FormControl fullWidth margin="normal">
             <InputLabel id="service-type-label">Service Type</InputLabel>
             <Select
@@ -334,12 +332,9 @@ export const ProviderRegistration: React.FC = () => {
             onChange={handleChange}
             fullWidth
             margin="normal"
-            error={!!errors.specialization}
-            helperText={errors.specialization}
           />
-          <TextField label="specialization" name="specialization" value={form.specialization} onChange={handleChange} fullWidth margin="normal" error={!!errors.specialization} helperText={errors.specialization} />
-          <TextField label="Clinic Name" name="clinicName" value={form.clinicName} onChange={handleChange} fullWidth margin="normal" error={!!errors.clinicName} helperText={errors.clinicName} />
-          <TextField label="Clinic Address" name="clinicAddress" value={form.clinicAddress} onChange={handleChange} fullWidth margin="normal" error={!!errors.clinicAddress} helperText={errors.clinicAddress} />
+          <TextField label="Clinic Name" name="orgName" value={form.orgName} onChange={handleChange} fullWidth margin="normal" error={!!errors.orgName} helperText={errors.orgName} />
+          <TextField label="Clinic Address" name="orgAddress" value={form.orgAddress} onChange={handleChange} fullWidth margin="normal" error={!!errors.orgAddress} helperText={errors.orgAddress} />
           <FormControl fullWidth margin="normal">
             <InputLabel id="booking-type-label">Booking Type</InputLabel>
             <Select

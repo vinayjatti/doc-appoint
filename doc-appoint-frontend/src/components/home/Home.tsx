@@ -127,5 +127,6 @@ export const Home: React.FC = () => {
         </Card>
       </Box>
     </Box>
+
   );
 };

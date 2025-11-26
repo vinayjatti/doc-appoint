@@ -34,11 +34,11 @@ export const UserProfileUpdate: React.FC = () => {
         name: "",
         phone: "",
         specialization: "",
-        clinicName: "",
-        clinicAddress: "",
+        orgName: "",
+        orgAddress: "",
         clinicGeoLocation: "",
         location: { lat: 12.9716, lng: 77.5946 },
-        providerId: providerId,
+        userId: providerId,
     });
 
     const [message, setMessage] = useState("");
@@ -95,8 +95,8 @@ export const UserProfileUpdate: React.FC = () => {
                     name,
                     phone,
                     specialization,
-                    clinicName,
-                    clinicAddress,
+                    orgName,
+                    orgAddress,
                     clinicGeoLocation,
                     location,
                 } = res.data;
@@ -105,11 +105,11 @@ export const UserProfileUpdate: React.FC = () => {
                     name: name || "",
                     phone: phone || "",
                     specialization: specialization || "",
-                    clinicName: clinicName || "",
-                    clinicAddress: clinicAddress || "",
+                    orgName: orgName || "",
+                    orgAddress: orgAddress || "",
                     clinicGeoLocation: clinicGeoLocation || "",
                     location: location || { lat: 12.9716, lng: 77.5946 },
-                    providerId,
+                    userId:providerId,
                 });
             } catch (err) {
                 console.error(err);
@@ -131,8 +131,8 @@ export const UserProfileUpdate: React.FC = () => {
         if (!form.name.trim()) newErrors.name = "Name is required";
         if (!form.phone.trim()) newErrors.phone = "Phone is required";
         if (!form.specialization.trim()) newErrors.specialization = "Specialization is required";
-        if (!form.clinicName.trim()) newErrors.clinicName = "Clinic name is required";
-        if (!form.clinicAddress.trim()) newErrors.clinicAddress = "Clinic address is required";
+        if (!form.orgName.trim()) newErrors.orgName = "Clinic name is required";
+        if (!form.orgAddress.trim()) newErrors.orgAddress = "Clinic address is required";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -192,7 +192,7 @@ export const UserProfileUpdate: React.FC = () => {
                 {/* -------------------------
                     Text Fields
                 -------------------------- */}
-                {["name", "phone", "specialization", "clinicName", "clinicAddress"].map((field) => (
+                {["name", "phone", "specialization", "orgName", "orgAddress"].map((field) => (
                     <Grid key={field}  size={{xs:12}}>
                         <TextField
                             fullWidth

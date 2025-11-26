@@ -158,7 +158,7 @@ export const BookAppointment: React.FC = () => {
                 <CardContent>
                     <Typography variant="h6">{provider.name}</Typography>
                     <Typography color="textSecondary">{provider.serviceCategory}</Typography>
-                    <Typography color="textSecondary">{provider.businessAddress}</Typography>
+                    <Typography color="textSecondary">{provider.orgAddress}</Typography>
                 </CardContent>
             </Card>
 

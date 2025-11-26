@@ -85,7 +85,7 @@ router.post("/verify-otp", async (req, res) => {
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, phone, password, specialization, clinicName, clinicAddress } = req.body;
+    const { name, email, phone, password, specialization, orgName, orgAddress } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: "Email already exists" });
@@ -99,8 +99,8 @@ router.post("/register", async (req, res) => {
       password,
       role: "provider",
       specialization,
-      clinicName,
-      clinicAddress,
+      orgName,
+      orgAddress,
       emailVerificationToken,
     });
     await provider.save();

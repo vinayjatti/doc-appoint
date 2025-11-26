@@ -9,8 +9,8 @@ export interface IUser extends Document {
   // Generic service provider fields
   serviceType?: string;      
   specialization?: string             
-  locationName?: string;                 // Replaces clinicName
-  locationAddress?: string;              // Replaces clinicAddress
+  orgName?: string;                 // Replaces orgName
+  orgAddress?: string;              // Replaces orgAddress
 
   bookingSlotsType?: "slots" | "number";  
 
@@ -49,8 +49,8 @@ const userSchema = new Schema<IUser>(
     // Generic fields for any service provider
     serviceType: String,  
     specialization: String,          
-    locationName: String,          // Replaces clinicName
-    locationAddress: String,       // Replaces clinicAddress
+    orgName: String,          // Replaces orgName
+    orgAddress: String,       // Replaces orgAddress
 
     bookingSlotsType: {
       type: String,

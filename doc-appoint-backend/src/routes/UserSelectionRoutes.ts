@@ -25,12 +25,12 @@ router.post("/user/create", async (req: Request, res: Response) => {
       bookingSlotsType,
       serviceType,
       specialization,
-      businessName,
-      businessAddress,
+      orgName,
+      orgAddress,
       availability,
     } = req.body;
 
-    if (!name || !phone || !role || !password) {
+    if (!name || !phone || !role ) {
       return res
         .status(400)
         .json({ message: "Name, phone, role, and password are required" });
@@ -49,10 +49,10 @@ router.post("/user/create", async (req: Request, res: Response) => {
       email,
       serviceType,
       specialization,
-      locationName: businessName,
-      locationAddress: businessAddress,
+      orgName: orgName,
+      orgAddress: orgAddress,
       bookingSlotsType,
-      meta: { businessName },
+      meta: { orgName },
       availability: Array.isArray(availability) ? availability : [],
       location: {
         type: "Point",
@@ -64,7 +64,7 @@ router.post("/user/create", async (req: Request, res: Response) => {
 
     // Create auth record
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
+    const passwordHash = await bcrypt.hash(String(newUser._id), salt);
 
     await new UserAuth({
       userId: newUser._id,
@@ -235,8 +235,8 @@ router.put("/user/update", verifyToken, async (req, res) => {
       phone,
       serviceType,
       specialization,
-      businessName,
-      businessAddress,
+      orgName,
+      orgAddress,
     } = req.body;
 
     if (!name || !phone) {
@@ -254,8 +254,8 @@ router.put("/user/update", verifyToken, async (req, res) => {
     user.phone = phone;
     user.serviceType = serviceType;
     user.specialization = specialization;
-    user.locationName = businessName;
-    user.locationAddress = businessAddress;
+    user.orgName = orgName;
+    user.orgAddress = orgAddress;
 
     await user.save();
 

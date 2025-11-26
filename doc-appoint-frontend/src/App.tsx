@@ -68,24 +68,31 @@ const App: React.FC = () => {
               color="inherit"
               aria-label="menu"
               onClick={toggleDrawer(true)}
-              sx={{ mr: 2 }}
+              sx={{ mr: 1, }}
             >
               <MenuIcon />
             </IconButton>
 
             <Avatar
-              alt="AppointmentHub Logo"
               src={logo}
-              sx={{ width: "145px", height: "62px", mr: 1, bgcolor: "#fff" }}
+              alt="Logo"
+              sx={{
+                width: { xs: 80, sm: 145 },
+                height: { xs: 40, sm: 62 },
+                bgcolor: "#fff",
+                mr: 1
+              }}
             />
 
             <Typography
               variant="h6"
               sx={{
                 fontWeight: 600,
+                fontSize: { xs: "14px", sm: "18px" },
                 letterSpacing: 0.5,
                 color: "#fff",
                 textTransform: "uppercase",
+                whiteSpace: "nowrap"
               }}
             >
               Appointment Hub
@@ -93,12 +100,8 @@ const App: React.FC = () => {
           </Box>
 
           {/* Right Side User Info */}
-          {providerName ? (
-            <Box display="flex" alignItems="center" gap={2}>
-              <Typography variant="body1" sx={{ color: "#fff" }}>
-                👤 {providerName}
-              </Typography>
-
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {providerName ? (
               <Button
                 color="inherit"
                 variant="outlined"
@@ -106,26 +109,28 @@ const App: React.FC = () => {
                 sx={{
                   color: "#fff",
                   borderColor: "#fff",
-                  "&:hover": { borderColor: "#ddd" },
+                  ml: { xs: 1, sm: 2 },
+                  fontSize: { xs: "12px", sm: "14px" }
                 }}
               >
                 Logout
               </Button>
-            </Box>
-          ) : (
-            <Button
-              color="inherit"
-              variant="outlined"
-              onClick={() => navigate("/login")}
-              sx={{
-                color: "#fff",
-                borderColor: "#fff",
-                "&:hover": { borderColor: "#ddd" },
-              }}
-            >
-              Login
-            </Button>
-          )}
+            ) : (
+              <Button
+                color="inherit"
+                variant="outlined"
+                onClick={() => navigate("/login")}
+                sx={{
+                  color: "#fff",
+                  borderColor: "#fff",
+                  ml: { xs: 1, sm: 2 },
+                  fontSize: { xs: "12px", sm: "14px" }
+                }}
+              >
+                Login
+              </Button>
+            )}
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -163,7 +168,6 @@ const App: React.FC = () => {
 
               ...(providerName
                 ? [
-                    { name: "Providers", path: "/providers" },
                     { name: "Appointments", path: "/appointments" },
                     { name: "Profile", path: "/profile" },
 
@@ -243,8 +247,18 @@ const App: React.FC = () => {
       </Container>
 
       {/* Footer */}
-      <Box textAlign="center" py={2} color="#777" fontSize={14} borderTop="1px solid #eee">
-        © {new Date().getFullYear()} AppointmentHub — All Rights Reserved
+      <Box
+        textAlign="center"
+        py={3}
+        sx={{ backgroundColor: "#3A3A94", color: "#fff", mt: 4 }}
+      >
+        <Typography variant="body1">
+          📞 +91 7676158163 | 📧 vinayjatti@gmail.com
+        </Typography>
+
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          © {new Date().getFullYear()} AppointmentHub — All Rights Reserved
+        </Typography>
       </Box>
     </>
   );
