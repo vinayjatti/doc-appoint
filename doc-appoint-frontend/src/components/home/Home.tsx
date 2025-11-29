@@ -30,15 +30,24 @@ export const Home: React.FC = () => {
       </Box>
 
       {/* Search Cards */}
+
+
+
+
       <Grid
         container
         spacing={4}
         justifyContent="center"
         alignItems="stretch"
-        sx={{ mb: 5 }}
+        sx={{ mt: 5 }}
       >
-        {/* Card 1 - Search Providers */}
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid
+          container
+          spacing={4}
+          justifyContent="center"
+          alignItems="stretch"
+          size={{ xs: 12, sm: 6, md: 4 }}
+        >
           <Card
             sx={{
               textAlign: "center",
@@ -69,63 +78,32 @@ export const Home: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Card 2 - Search Locations */}
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}  >
           <Card
             sx={{
               textAlign: "center",
               p: 3,
               boxShadow: 3,
               borderRadius: 3,
-              transition: "transform 0.3s",
+              background: "#fafafa",
+               transition: "transform 0.3s",
               "&:hover": { transform: "scale(1.05)" },
               height: "100%",
             }}
           >
-            <CardContent>
-              <LocationOn sx={{ fontSize: 60, color: "#2e7d32" }} />
-              <Typography variant="h5" gutterBottom>
-                Search Nearby Locations
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Discover nearby businesses offering appointment-based services.
-              </Typography>
-              <Button
-                variant="contained"
-                color="success"
-                onClick={handleSearchLocations}
-              >
-                Find Locations
-              </Button>
-            </CardContent>
+            <PersonAdd sx={{ fontSize: 60, color: "#ff9800", mb: 1 }} />
+            <Typography variant="h5" gutterBottom>
+              Are you a Service Provider?
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Register your services and let customers book appointments seamlessly.
+            </Typography>
+            <Button variant="contained" color="warning" onClick={handleRegister}>
+              Register Now
+            </Button>
           </Card>
         </Grid>
       </Grid>
-
-      {/* Registration Section */}
-      <Box textAlign="center" mt={5}>
-        <Card
-          sx={{
-            maxWidth: 500,
-            mx: "auto",
-            p: 3,
-            boxShadow: 3,
-            borderRadius: 3,
-            background: "#fafafa",
-          }}
-        >
-          <PersonAdd sx={{ fontSize: 60, color: "#ff9800", mb: 1 }} />
-          <Typography variant="h5" gutterBottom>
-            Are you a Service Provider?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Register your services and let customers book appointments seamlessly.
-          </Typography>
-          <Button variant="contained" color="warning" onClick={handleRegister}>
-            Register Now
-          </Button>
-        </Card>
-      </Box>
     </Box>
 
   );

@@ -183,7 +183,6 @@ export const SearchProvider: React.FC = () => {
               }}
             >
               <MenuItem value="name">Provider Name</MenuItem>
-              <MenuItem value="address">Service Address</MenuItem>
               <MenuItem value="location">Location</MenuItem>
             </Select>
           </FormControl>
@@ -214,7 +213,12 @@ export const SearchProvider: React.FC = () => {
         {searchType === "location" && (
           <Grid size={{ xs: 12, md: 8 }}>
             <StandaloneSearchBox onLoad={onLoad} onPlacesChanged={onPlacesChanged}>
-              <TextField fullWidth label="Enter Location" value={address} />
+              <TextField
+                fullWidth
+                label="Enter Location"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
             </StandaloneSearchBox>
           </Grid>
         )}

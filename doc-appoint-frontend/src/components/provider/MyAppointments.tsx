@@ -38,7 +38,7 @@ interface Appointment {
 interface Doctor {
     _id: string;
     name: string;
-     bookingSlotsType: "slots" | "number";
+    bookingSlotsType: "slots" | "number";
 }
 
 const MyAppointments: React.FC = () => {
@@ -50,7 +50,7 @@ const MyAppointments: React.FC = () => {
     const [selectedRows, setSelectedRows] = useState<Appointment[]>([]);
     const [bookingStatus, setBookingStatus] = useState("");
     const [paymentStatus, setPaymentStatus] = useState("");
-    const { providerId, providerName, token,bookingSlotsType } = useProviderStore();
+    const { providerId, providerName, token, bookingSlotsType } = useProviderStore();
 
 
     const myTheme = themeQuartz.withParams({
@@ -66,72 +66,65 @@ const MyAppointments: React.FC = () => {
 
     // ✅ AG Grid Columns
 
+    const isMobile = window.innerWidth < 600;
+
     const columnDefs: ColDef[] = useMemo(() => {
-       const cols: ColDef[] =  [
-        {
-            headerCheckboxSelection: true,   // ✅ Checkbox in header for "select all"
-            checkboxSelection: true,          // ✅ Checkbox in each row
-            width: 60,
-            pinned: "left",
-            headerName: "",                   // optional: hide header label
-        },
-        {
-            headerName: "#",
-            valueGetter: (params: any) => params.node.rowIndex + 1,
-            width: 50,
-            pinned: "left",
-        },
-        { headerName: "Patient Name", field: "clientName", flex: 1 },
-        { headerName: "Number", field: "clientContact", flex: 1 },
-       
-        {
-            headerName: "Booking Status",
-            field: "bookingStatus",
-            flex: 1,
-            cellStyle: (params: any) => {
-                const value = params.value?.toLowerCase();
-                if (value === "confirmed") {
-                    return { color: "green", fontWeight: 600 };
-                } else if (value === "closed") {
-                    return { color: "orange", fontWeight: 600 };
-                } else {
-                    return { color: "gray", fontWeight: 500 };
-                }
-            }
-
-        },
-        {
-            headerName: "Payment Status",
-            field: "paymentStatus",
-            flex: 1,
-            cellClass: (params: any) =>
-                params.value === "paid" ? "status-paid" : "status-pending",
-            cellStyle: (params: any) => {
-                const value = params.value?.toLowerCase();
-                if (value === "paid") {
-                    return { color: "green", fontWeight: 600 };
-                } else if (value === "unpaid") {
-                    return { color: "gray", fontWeight: 500 };
-                } else {
-                    return { color: "orange", fontWeight: 600 };
-                }
+        const cols: ColDef[] = [
+            {
+                headerCheckboxSelection: true,
+                checkboxSelection: true,
+                width: isMobile ? 40 : 60,        // 👈 shrink checkbox on mobile
+                minWidth: isMobile ? 35 : 50,     // 👈 allow it to shrink more
+                maxWidth: isMobile ? 45 : 60,
+                pinned: "left",
+                headerName: "",
             },
-        },
+            { headerName: "Patient Name", field: "clientName", flex: 1, minWidth: 120 },
+            { headerName: "Number", field: "clientContact", flex: 1, minWidth: 120 },
 
-    ]
-    if (bookingSlotsType === "number") {
-        cols.push({ headerName: "Queue Number", field: "queueNumber", flex: 1 });
-    } else {
-        cols.push({ headerName: "Slots booked", field: "slot", flex: 1 });
-    }
-    return cols;
-    }, []);
+            {
+                headerName: "Booking Status",
+                field: "bookingStatus",
+                flex: 1,
+                minWidth: 130,
+                cellStyle: (params) => {
+                    const value = params.value?.toLowerCase();
+                    if (value === "confirmed") return { color: "green", fontWeight: 600 };
+                    if (value === "closed") return { color: "orange", fontWeight: 600 };
+                    return { color: "gray", fontWeight: 500 };
+                },
+            },
+
+            {
+                headerName: "Payment Status",
+                field: "paymentStatus",
+                flex: 1,
+                minWidth: 120,
+                cellStyle: (params) => {
+                    const value = params.value?.toLowerCase();
+                    if (value === "paid") return { color: "green", fontWeight: 600 };
+                    if (value === "unpaid") return { color: "gray", fontWeight: 500 };
+                    return { color: "orange", fontWeight: 600 };
+                },
+            }
+        ];
+
+        if (bookingSlotsType === "number") {
+            cols.push({ headerName: "Queue Number", field: "queueNumber", flex: 1, minWidth: 100 });
+        } else {
+            cols.push({ headerName: "Slots Booked", field: "slot", flex: 1, minWidth: 100 });
+        }
+
+        return cols;
+    }, [bookingSlotsType]);
 
     const defaultColDef = useMemo(() => ({
         sortable: true,
         filter: true,
         resizable: true,
         headerClass: "header-cell",
+        flex: 1,           // 🔥 Columns auto-resize based on available width
+        minWidth: 120,     // 🔥 Prevent columns from becoming too small
     }), []);
 
     useEffect(() => {
@@ -214,11 +207,11 @@ const MyAppointments: React.FC = () => {
     return (
         <Box
             sx={{
+                width: "100%",
                 maxWidth: 1200,
-                minWidth: 900,
                 mx: "auto",
                 mt: 6,
-                p: 4,
+                p: { xs: 2, md: 4 },        // responsive padding
                 backgroundColor: "background.paper",
                 boxShadow: 3,
                 borderRadius: 3,
@@ -312,19 +305,23 @@ const MyAppointments: React.FC = () => {
                         className="ag-theme-alpine"
                         sx={{
                             width: "100%",
-                            minWidth: 600, // ✅ ensures table doesn’t collapse too much
-                            height: { xs: 400, md: 500 }, // ✅ responsive height
+                            overflowX: "auto",
+                            height: { xs: 400, md: 500 },
                         }}
                     >
                         <AgGridReact
                             rowData={appointments}
                             columnDefs={columnDefs}
-                            defaultColDef={defaultColDef}
-                            rowSelection={"multiple"}
+                            defaultColDef={{
+                                flex: 1,
+                                minWidth: 120,
+                                sortable: true,
+                                resizable: true,
+                            }}
+                            rowSelection="multiple"
                             suppressRowClickSelection={true}
                             onSelectionChanged={onSelectionChanged}
-                            theme={myTheme}
-                            domLayout="autoHeight" // ✅ adjusts grid height automatically
+                            domLayout="autoHeight"
                         />
                     </Box>
                 </>

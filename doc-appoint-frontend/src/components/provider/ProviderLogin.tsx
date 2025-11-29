@@ -9,6 +9,7 @@ import {
   Alert,
   Link,
   Stack,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +20,8 @@ const ProviderLogin: React.FC = () => {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
+  const [loadingEmail, setLoadingEmail] = useState(false);
+  const [loadingOtp, setLoadingOtp] = useState(false);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -41,6 +44,8 @@ const ProviderLogin: React.FC = () => {
       });
     }
 
+    setLoadingEmail(true);
+
     try {
       await axios.post(BASE_URL + "/api/account/send-otp-email", { email });
 
@@ -57,6 +62,8 @@ const ProviderLogin: React.FC = () => {
         message: err.response?.data?.message || "Failed to send OTP",
         severity: "error",
       });
+    } finally {
+      setLoadingEmail(false);
     }
   };
 
@@ -71,7 +78,7 @@ const ProviderLogin: React.FC = () => {
         severity: "warning",
       });
     }
-
+    setLoadingOtp(true);
     try {
       const res = await axios.post(BASE_URL + "/api/account/verify-code", {
         email,
@@ -83,14 +90,15 @@ const ProviderLogin: React.FC = () => {
       const sessionDuration = 1 * 60 * 60 * 1000;
 
       // save provider data (basic for now)
-      setProvider({ 
+      setProvider({
         providerName: res.data.providerName,
-         providerId: res.data.providerId, 
-         token: res.data.token, 
-         loginTime: loginTime.toString(), 
-         sessionDuration: sessionDuration.toString(),
-          bookingSlotsType: res.data.bookingSlotsType, 
-          userRole: res.data.role, });
+        providerId: res.data.providerId,
+        token: res.data.token,
+        loginTime: loginTime.toString(),
+        sessionDuration: sessionDuration.toString(),
+        bookingSlotsType: res.data.bookingSlotsType,
+        userRole: res.data.role,
+      });
 
       setSnackbar({
         open: true,
@@ -105,6 +113,8 @@ const ProviderLogin: React.FC = () => {
         message: err.response?.data?.message || "Invalid OTP",
         severity: "error",
       });
+    } finally {
+      setLoadingOtp(false);
     }
   };
 
@@ -145,8 +155,13 @@ const ProviderLogin: React.FC = () => {
               color="primary"
               sx={{ mt: 2 }}
               onClick={sendOtp}
+              disabled={loadingEmail}
             >
-              Send OTP
+              {loadingEmail ? (
+                <CircularProgress size={22} sx={{ color: "white" }} />
+              ) : (
+                "Send OTP"
+              )}
             </Button>
           </>
         )}
@@ -172,8 +187,13 @@ const ProviderLogin: React.FC = () => {
                 variant="contained"
                 color="primary"
                 onClick={verifyOtp}
+                disabled={loadingOtp}
               >
-                Verify OTP
+                {loadingOtp ? (
+                  <CircularProgress size={22} sx={{ color: "white" }} />
+                ) : (
+                  "Verify OTP"
+                )}
               </Button>
 
               <Button

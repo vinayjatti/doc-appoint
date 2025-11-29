@@ -37,7 +37,7 @@ import ForgotPassword from "./components/provider/ForgotPassword";
 import VerifyCode from "./components/provider/VerifyCode";
 import ResetPassword from "./components/provider/ResetPassword";
 
-import logo from "./assets/medichamp.png"; // replace logo later with generic name
+import logo from "./assets/appointment_hub.png"; // replace logo later with generic name
 
 
 const App: React.FC = () => {
@@ -61,78 +61,118 @@ const App: React.FC = () => {
 
       {/* Top AppBar */}
       <AppBar position="sticky" sx={{ backgroundColor: "#3A3A94" }}>
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={toggleDrawer(true)}
-              sx={{ mr: 1, }}
-            >
-              <MenuIcon />
-            </IconButton>
+  <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
 
-            <Avatar
-              src={logo}
-              alt="Logo"
-              sx={{
-                width: { xs: 80, sm: 145 },
-                height: { xs: 40, sm: 62 },
-                bgcolor: "#fff",
-                mr: 1
-              }}
-            />
+    {/* LEFT SIDE (MOBILE LOGIN FIRST) */}
+    <Box sx={{ display: "flex", alignItems: "center" }}>
 
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                fontSize: { xs: "14px", sm: "18px" },
-                letterSpacing: 0.5,
-                color: "#fff",
-                textTransform: "uppercase",
-                whiteSpace: "nowrap"
-              }}
-            >
-              Appointment Hub
-            </Typography>
-          </Box>
+      {/* ✔ Mobile-only Login/Logout Button */}
+      <Box sx={{ display: { xs: "block", sm: "none" }, mr: 1 }}>
+        {providerName ? (
+          <Button
+            color="inherit"
+            variant="outlined"
+            onClick={logout}
+            sx={{
+              color: "#fff",
+              borderColor: "#fff",
+              fontSize: "12px",
+              padding: "2px 8px",
+            }}
+          >
+            Logout
+          </Button>
+        ) : (
+          <Button
+            color="inherit"
+            variant="outlined"
+            onClick={() => navigate("/login")}
+            sx={{
+              color: "#fff",
+              borderColor: "#fff",
+              fontSize: "12px",
+              padding: "2px 8px",
+            }}
+          >
+            Login
+          </Button>
+        )}
+      </Box>
 
-          {/* Right Side User Info */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            {providerName ? (
-              <Button
-                color="inherit"
-                variant="outlined"
-                onClick={logout}
-                sx={{
-                  color: "#fff",
-                  borderColor: "#fff",
-                  ml: { xs: 1, sm: 2 },
-                  fontSize: { xs: "12px", sm: "14px" }
-                }}
-              >
-                Logout
-              </Button>
-            ) : (
-              <Button
-                color="inherit"
-                variant="outlined"
-                onClick={() => navigate("/login")}
-                sx={{
-                  color: "#fff",
-                  borderColor: "#fff",
-                  ml: { xs: 1, sm: 2 },
-                  fontSize: { xs: "12px", sm: "14px" }
-                }}
-              >
-                Login
-              </Button>
-            )}
-          </Box>
-        </Toolbar>
-      </AppBar>
+      {/* Menu Icon */}
+      <IconButton
+        edge="start"
+        color="inherit"
+        aria-label="menu"
+        onClick={toggleDrawer(true)}
+        sx={{ mr: 1 }}
+      >
+        <MenuIcon />
+      </IconButton>
+
+      {/* Logo */}
+      <Avatar
+        src={logo}
+        alt="Logo"
+        sx={{
+          width: { xs: 80, sm: 145 },
+          height: { xs: 40, sm: 62 },
+          bgcolor: "#fff",
+          mr: 1
+        }}
+      />
+
+      {/* Title */}
+      <Typography
+        variant="h6"
+        sx={{
+          fontWeight: 600,
+          fontSize: { xs: "14px", sm: "18px" },
+          letterSpacing: 0.5,
+          color: "#fff",
+          textTransform: "uppercase",
+          whiteSpace: "nowrap"
+        }}
+      >
+        Appointment Hub
+      </Typography>
+    </Box>
+
+    {/* RIGHT SIDE (DESKTOP LOGIN) */}
+    <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center" }}>
+      {providerName ? (
+        <Button
+          color="inherit"
+          variant="outlined"
+          onClick={logout}
+          sx={{
+            color: "#fff",
+            borderColor: "#fff",
+            ml: 2,
+            fontSize: "14px"
+          }}
+        >
+          Logout
+        </Button>
+      ) : (
+        <Button
+          color="inherit"
+          variant="outlined"
+          onClick={() => navigate("/login")}
+          sx={{
+            color: "#fff",
+            borderColor: "#fff",
+            ml: 2,
+            fontSize: "14px"
+          }}
+        >
+          Login
+        </Button>
+      )}
+    </Box>
+
+  </Toolbar>
+</AppBar>
 
       {/* Sidebar Drawer */}
       <Drawer
@@ -253,7 +293,7 @@ const App: React.FC = () => {
         sx={{ backgroundColor: "#3A3A94", color: "#fff", mt: 4 }}
       >
         <Typography variant="body1">
-          📞 +91 7676158163 | 📧 vinayjatti@gmail.com
+           | 📧 vinayjatti@gmail.com
         </Typography>
 
         <Typography variant="body2" sx={{ mt: 1 }}>

@@ -17,3 +17,14 @@ h1 {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
+@media (max-width: 600px) {
+  .ag-checkbox-input-wrapper input {
+    transform: scale(0.75);   /* 👈 smaller checkbox */
+  }
+
+  .ag-header-cell, .ag-cell {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+}
