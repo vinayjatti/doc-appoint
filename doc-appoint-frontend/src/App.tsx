@@ -37,7 +37,7 @@ import ForgotPassword from "./components/provider/ForgotPassword";
 import VerifyCode from "./components/provider/VerifyCode";
 import ResetPassword from "./components/provider/ResetPassword";
 
-import logo from "./assets/appointment_hub.png"; // replace logo later with generic name
+import logo from "./assets/reserve_your_time.png"; // replace logo later with generic name
 
 
 const App: React.FC = () => {
@@ -134,7 +134,7 @@ const App: React.FC = () => {
           whiteSpace: "nowrap"
         }}
       >
-        Appointment Hub
+        Reserve Your Time
       </Typography>
     </Box>
 

@@ -1,11 +1,12 @@
 import axios from "axios";
 import { NearByPlaceData } from "./Interface";
-import { BASE_URL } from "./constants";
+import { BASE_URL, REACT_APP_SECRET } from "./constants";
 
-const axiosInstance = axios.create({
+export const axiosInstance = axios.create({
     headers: {
-        "Content-Type": "application/json",
+        "x-app-auth": REACT_APP_SECRET
     },
+   
 });
 
 export const searchNearBy = async (

@@ -10,6 +10,7 @@ import UserAccountManageRoutes from "./routes/UserAccountManageRoutes";
 import auth from "./routes/auth";
 import { User } from "./models/User";
 import { applySecurityMiddleware } from "./middleware/security";
+import { verifyClientSecret } from "./middleware/clientSecret";
 
 dotenv.config();
 connectDB();
@@ -24,6 +25,8 @@ applySecurityMiddleware(app);
 //     credentials: true,
 //   })
 // );
+app.use(verifyClientSecret);
+
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/messages", MessageRouter);
 app.use("/api/google", GoogleSearchRouter);

@@ -11,10 +11,10 @@ import {
   Stack,
   CircularProgress,
 } from "@mui/material";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useProviderStore } from "../../store/useProviderStore";
 import { BASE_URL } from "../../utils/constants";
+import { axiosInstance } from "../../utils/AxiosInstance";
 
 const ProviderLogin: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -47,7 +47,7 @@ const ProviderLogin: React.FC = () => {
     setLoadingEmail(true);
 
     try {
-      await axios.post(BASE_URL + "/api/account/send-otp-email", { email });
+      await axiosInstance.post(BASE_URL + "/api/account/send-otp-email", { email });
 
       setSnackbar({
         open: true,
@@ -80,7 +80,7 @@ const ProviderLogin: React.FC = () => {
     }
     setLoadingOtp(true);
     try {
-      const res = await axios.post(BASE_URL + "/api/account/verify-code", {
+      const res = await axiosInstance.post(BASE_URL + "/api/account/verify-code", {
         email,
         code: otp,
       });
@@ -133,7 +133,7 @@ const ProviderLogin: React.FC = () => {
           textAlign="center"
           gutterBottom
         >
-          Doctor Login
+          Provider Login
         </Typography>
 
         {/* STEP 1: ENTER EMAIL */}

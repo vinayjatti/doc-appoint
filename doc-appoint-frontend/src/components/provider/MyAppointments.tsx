@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import {
     Box,
     TextField,
@@ -21,6 +20,7 @@ import { AllCommunityModule, ModuleRegistry, themeQuartz } from "ag-grid-communi
 import { AgGridReact } from "ag-grid-react";
 import { BASE_URL } from "../../utils/constants";
 import { useProviderStore } from "../../store/useProviderStore";
+import { axiosInstance } from "../../utils/AxiosInstance";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -136,7 +136,7 @@ const MyAppointments: React.FC = () => {
         const fetchDoctor = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get(`${BASE_URL}/api/users/user/${providerId}`, {
+                const res = await axiosInstance.get(`${BASE_URL}/api/users/user/${providerId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -164,7 +164,7 @@ const MyAppointments: React.FC = () => {
             setLoading(true);
             setError("");
 
-            const res = await axios.get(
+            const res = await axiosInstance.get(
                 `${BASE_URL}/api/appointments?providerId=${doctor._id}&date=${appointmentDate}`
             );
             setAppointments(res.data.appointments || []);
@@ -191,7 +191,7 @@ const MyAppointments: React.FC = () => {
                 paymentStatus: paymentStatus || row.paymentStatus,
             }));
 
-            await axios.put(`${BASE_URL}/api/appointments/bulk-update`, { updates });
+            await axiosInstance.put(`${BASE_URL}/api/appointments/bulk-update`, { updates });
 
             // Refresh list after update
             fetchAppointments();

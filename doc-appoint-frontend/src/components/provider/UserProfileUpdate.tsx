@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import {
     TextField,
     Button,
@@ -12,6 +11,7 @@ import {
 import { useProviderStore } from "../../store/useProviderStore";
 import { Autocomplete, GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import { BASE_URL, REACT_APP_GOOGLE_MAP_API_KEY } from "../../utils/constants";
+import { axiosInstance } from "../../utils/AxiosInstance";
 
 export const UserProfileUpdate: React.FC = () => {
     const { isLoaded, loadError } = useLoadScript({
@@ -87,7 +87,7 @@ export const UserProfileUpdate: React.FC = () => {
         const fetchProfile = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get(`${BASE_URL}/api/users/user/${providerId}`, {
+                const res = await axiosInstance.get(`${BASE_URL}/api/users/user/${providerId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -147,7 +147,7 @@ export const UserProfileUpdate: React.FC = () => {
         try {
             setLoading(true);
 
-            const res = await axios.put(
+            const res = await axiosInstance.put(
                 `${BASE_URL}/api/users/user/update`,
                 { ...form },
                 { headers: { Authorization: `Bearer ${token}` } }

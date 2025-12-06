@@ -24,6 +24,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useLoadScript, StandaloneSearchBox } from "@react-google-maps/api";
 import { BASE_URL, REACT_APP_GOOGLE_MAP_API_KEY } from "../../utils/constants";
+import { axiosInstance } from "../../utils/AxiosInstance";
 
 const libraries: ("places")[] = ["places"];
 
@@ -98,55 +99,91 @@ export const SearchProvider: React.FC = () => {
 
   // Call API
   const handleSearch = async () => {
-    setLoading(true);
-    setError("");
-    setProviders([]);
+  setLoading(true);
+  setError("");
+  setProviders([]);
 
-    try {
-      const params = new URLSearchParams();
-      params.append("role", "provider"); // changed from doctor
+  try {
+    const params = new URLSearchParams();
+    params.append("role", "provider");
 
-      if (searchType === "location" && location) {
-        params.append("latitude", location.lat.toString());
-        params.append("longitude", location.lng.toString());
-      } else if (searchType === "name" && providerName) {
-        params.append("name", providerName);
-      } else if (searchType === "address" && serviceAddress) {
-        params.append("address", serviceAddress);
-      } else {
-        setError("Please fill the required search field.");
+    // --- Validate & Add Search Parameters ---
+    if (searchType === "location") {
+      if (!location) {
+        setError("Location not available.");
         setLoading(false);
         return;
       }
-
-      const res = await fetch(`${BASE_URL}/api/users/user/search?${params}`);
-      const data = await res.json();
-
-      if (res.status !== 200) {
-        setError(data.message || "No matching providers found.");
+      params.append("latitude", String(location.lat));
+      params.append("longitude", String(location.lng));
+    } 
+    
+    else if (searchType === "name") {
+      if (!providerName?.trim()) {
+        setError("Please enter provider name.");
+        setLoading(false);
         return;
       }
+      params.append("name", providerName.trim());
+    }
+    
+    else if (searchType === "address") {
+      if (!serviceAddress?.trim()) {
+        setError("Please enter service address.");
+        setLoading(false);
+        return;
+      }
+      params.append("address", serviceAddress.trim());
+    }
 
-      const enhanced = data.map((p: any) => {
-        const [lng, lat] = p.location?.coordinates || [0, 0];
-        const dist = location ? calculateDistance(location.lat, location.lng, lat, lng) : 0;
+    // Convert params → plain object
+    const queryObj = Object.fromEntries(params.entries());
 
-        const today = new Date().toLocaleString("en-US", { weekday: "long" });
-        const todaySlots = p.availability?.find((a: any) => a.day === today)?.slots[0];
-        const statusInfo = todaySlots
-          ? getStatus(todaySlots.start, todaySlots.end)
-          : { status: "N/A", color: "default" };
+    // --- API CALL ---
+    const res = await axiosInstance.get(`${BASE_URL}/api/users/user/search`, {
+      params: queryObj
+    });
 
-        return { ...p, distance: dist, statusInfo };
+    if (res.status !== 200 || !Array.isArray(res.data)) {
+      setError("No matching providers found.");
+      return;
+    }
+
+    const list = res.data;
+
+    // --- Transform provider data ---
+    const enhanced = list.map((p: any) => {
+      const [lng = 0, lat = 0] = p.location?.coordinates || [];
+
+      const dist = location
+        ? calculateDistance(location.lat, location.lng, lat, lng)
+        : 0;
+
+      const today = new Date().toLocaleDateString("en-US", {
+        weekday: "long",
       });
 
-      setProviders(enhanced);
-    } catch {
-      setError("Failed to fetch providers.");
-    } finally {
-      setLoading(false);
-    }
-  };
+      const availability = p.availability?.find(
+        (a: any) => a.day === today
+      );
+
+      const todaySlot = availability?.slots?.[0];
+
+      const statusInfo = todaySlot
+        ? getStatus(todaySlot.start, todaySlot.end)
+        : { status: "N/A", color: "default" };
+
+      return { ...p, distance: dist, statusInfo };
+    });
+
+    setProviders(enhanced);
+  } catch (error: any) {
+    console.error(error);
+    setError("Failed to fetch providers.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const openDialogHandler = (p: any) => {
     setSelectedProvider(p);

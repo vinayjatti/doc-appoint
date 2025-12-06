@@ -20,6 +20,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { BASE_URL } from "../../utils/constants";
+import { axiosInstance } from "../../utils/AxiosInstance";
 
 // Utility to generate slots
 const generateSlots = (startHour: number, endHour: number, intervalMins: number) => {
@@ -68,23 +69,26 @@ export const BookAppointment: React.FC = () => {
     const fetchProviderDetails = async (providerId: any, date: string) => {
         setLoading(true);
         try {
-            const res = await fetch(`${BASE_URL}/api/users/user/${providerId}`);
-            const data = await res.json();
-
-            if (res.status === 200) setProvider(data);
-            else setError(data.message || "Provider not found");
+            // Fetch provider details
+            const res = await axiosInstance.get(`${BASE_URL}/api/users/user/${providerId}`);
+            setProvider(res.data);
 
             // Fetch booked slots
-            const bookedRes = await fetch(
-                `${BASE_URL}/api/appointments/booked-slots?providerId=${providerId}&date=${date}`
+            const bookedRes = await axiosInstance.get(
+                `${BASE_URL}/api/appointments/booked-slots`,
+                {
+                    params: { providerId, date },
+                }
             );
-            const bookedData = await bookedRes.json();
-            if (bookedRes.status === 200) {
-                setBookedSlots(bookedData.slots || []);
-            }
-        } catch (err) {
+
+            setBookedSlots(bookedRes.data.slots || []);
+        } catch (err: any) {
             console.error(err);
-            setError("Failed to fetch data");
+            const msg =
+                err.response?.data?.message ||
+                "Failed to fetch provider or slots data";
+
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -95,46 +99,41 @@ export const BookAppointment: React.FC = () => {
             (provider.bookingSlotsType === "slots" && !selectedSlot) ||
             !selectedDate ||
             !clientName
-        )
+        ) {
             return alert("Please fill all details");
+        }
 
         try {
             setLoading(true);
-            const res = await fetch(BASE_URL + "/api/appointments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    providerId,
-                    clientName:clientName,
-                    clientContact:clientContact,
-                    appointmentDate: selectedDate.format("YYYY-MM-DD"),
-                    slot: selectedSlot,
-                    bookingStatus: "booked",
-                    paymentStatus: "pending",
-                }),
+
+            const res = await axiosInstance.post(`${BASE_URL}/api/appointments`, {
+                providerId,
+                clientName: clientName,
+                clientContact: clientContact,
+                appointmentDate: selectedDate.format("YYYY-MM-DD"),
+                slot: selectedSlot,
+                bookingStatus: "booked",
+                paymentStatus: "pending",
             });
 
-            let data: any = {};
-            try {
-                const text = await res.text();
-                data = text ? JSON.parse(text) : {};
-            } catch (_) {}
+            // SUCCESS
+            setSuccess(true);
+            setOpenDialog(false);
+            setClientName("");
+            setClientContact("");
+            setSelectedSlot("");
 
-            if (!res.ok) {
-                setError(data.message || "Failed to book appointment");
-            } else {
-                setSuccess(true);
-                setOpenDialog(false);
-                setClientName("");
-                setClientContact("");
-                setSelectedSlot("");
-
-                const date = selectedDate.toISOString().split("T")[0];
-                fetchProviderDetails(providerId, date);
-            }
-        } catch (err) {
+            // Refresh page data
+            const date = selectedDate.toISOString().split("T")[0];
+            fetchProviderDetails(providerId, date);
+        } catch (err: any) {
             console.error("Booking error:", err);
-            setError("Something went wrong. Please try again.");
+
+            const msg =
+                err.response?.data?.message ||
+                "Something went wrong. Please try again.";
+
+            setError(msg);
         } finally {
             setLoading(false);
         }

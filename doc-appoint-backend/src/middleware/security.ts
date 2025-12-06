@@ -8,7 +8,8 @@ const allowedOrigins = [
   "http://localhost:8080", 
   "https://yourdomain.com",       // production frontend
   "https://staging.yourdomain.com",
-  "https://doc-appoint-frontend.fly.dev"
+  "https://doc-appoint-frontend.fly.dev",
+  "https://reserveyourtime.com"
 ];
 
 export const applySecurityMiddleware = (app: Express): void => {
@@ -46,7 +47,7 @@ export const applySecurityMiddleware = (app: Express): void => {
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-      allowedHeaders: ["Content-Type", "Authorization"],
+      allowedHeaders: ["Content-Type", "Authorization","x-app-auth"],
     })
   );
 };

@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { BASE_URL } from "../utils/constants";
+import { axiosInstance } from "../utils/AxiosInstance";
 export const Appoint: React.FC = () => {
     const [form, setForm] = useState({
         doctorId: '',
@@ -27,26 +28,26 @@ export const Appoint: React.FC = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch(  BASE_URL + '/api/appointments', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...form,
-                    doctorId: form.doctorId, // Ensure doctorId is sent as a valid ObjectId
-                }),
-            });
+            const payload = {
+                ...form,
+                doctorId: form.doctorId, // Ensure it's valid ObjectId
+            };
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                alert(`Error: ${errorData.message}`);
-            } else {
-                alert('Appointment created successfully!');
-            }
-        } catch (error) {
-            console.error('Error creating appointment:', error);
-            alert('An error occurred while creating the appointment.');
+            const response = await axiosInstance.post(
+                `${BASE_URL}/api/appointments`,
+                payload
+            );
+
+            alert("Appointment created successfully!");
+        } catch (error: any) {
+            console.error("Error creating appointment:", error);
+
+            const msg =
+                error.response?.data?.message ||
+                error.message ||
+                "An error occurred while creating the appointment.";
+
+            alert(`Error: ${msg}`);
         }
     };
 

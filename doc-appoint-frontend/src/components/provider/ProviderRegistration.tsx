@@ -4,7 +4,7 @@ import { Autocomplete, GoogleMap, Marker, useLoadScript } from "@react-google-ma
 import { BASE_URL, REACT_APP_GOOGLE_MAP_API_KEY } from "../../utils/constants";
 import { Add, Remove } from "@mui/icons-material";
 import WeeklyAvailabilityAccordion from "./WeeklyAvailabilityAccordion";
-import axios from "axios";
+import { axiosInstance } from "../../utils/AxiosInstance";
 
 
 
@@ -178,34 +178,45 @@ export const ProviderRegistration: React.FC = () => {
 
   const handleVerifyOtp = async (email: string, otp: any) => {
     try {
-      const res = await fetch(BASE_URL + "/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-      });
-      const data = await res.json();
+      const res = await axiosInstance.post(
+        `${BASE_URL}/api/auth/verify-otp`,
+        { email, otp },
+      );
 
-      if (res.ok) {
-        setSnackbar({ open: true, message: "OTP Verified Successfully!", severity: "success" });
-        setStep(3); // go to password setup
-      } else {
-        throw new Error(data.message || "Invalid OTP");
-      }
+      setSnackbar({
+        open: true,
+        message: "OTP Verified Successfully!",
+        severity: "success",
+      });
+
+      setStep(3);
     } catch (err: any) {
-      setSnackbar({ open: true, message: err.message, severity: "error" });
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to verify OTP";
+
+      setSnackbar({
+        open: true,
+        message: msg,
+        severity: "error",
+      });
     }
   };
 
   const handleSendOtp = async (email: string) => {
     try {
-      await axios.post(BASE_URL + "/api/auth/send-otp-email", { email });
+      await axiosInstance.post(BASE_URL + "/api/auth/send-otp-email", { email });
       setOtpSent(true);
       alert("OTP has been sent to your email!");
     } catch (error) {
       alert("Failed to send OTP. Please try again.");
     }
   };
+  
+  
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     const fields = Object.keys(form);
     let hasError = false;
@@ -222,74 +233,74 @@ export const ProviderRegistration: React.FC = () => {
       return;
     }
 
-
-    e.preventDefault();
     setSuccessMsg("");
     setErrorMsg("");
 
     try {
       console.log("Submitting form:", form);
-      const response = await fetch(BASE_URL + "/api/users/user/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          role: "provider",
-          latitude: Number(form.location.lat),
-          longitude: Number(form.location.lng),
-        }),
+
+      const payload = {
+        ...form,
+        role: "provider",
+        latitude: Number(form.location.lat),
+        longitude: Number(form.location.lng),
+      };
+
+      const response = await axiosInstance.post(
+        `${BASE_URL}/api/users/user/create`,
+        payload
+      );
+
+      const data = response.data;
+
+      // ---- SUCCESS ----
+      setSuccessMsg("Provider record created successfully!");
+
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        role: "provider",
+        latitude: "",
+        longitude: "",
+        bookingSlotsType: "number",
+        specialization: "",
+        orgName: "",
+        location: { lat: 12.9716, lng: 77.5946 },
+        orgAddress: "",
+        clinicGeoLocation: "",
+        serviceType: "",
+        availability: [
+          { day: "Monday", slots: [{ start: "09:00", end: "17:00" }] },
+          { day: "Tuesday", slots: [{ start: "09:00", end: "17:00" }] },
+          { day: "Wednesday", slots: [{ start: "09:00", end: "17:00" }] },
+          { day: "Thursday", slots: [{ start: "09:00", end: "17:00" }] },
+          { day: "Friday", slots: [{ start: "09:00", end: "17:00" }] },
+          { day: "Saturday", slots: [{ start: "09:00", end: "13:00" }] },
+          { day: "Sunday", slots: [] },
+        ],
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccessMsg("Provider record created successfully!");
-        setForm({
-          name: "",
-          email: "",
-          phone: "",
-          password: "",
-          confirmPassword: "",
-          role: "provider",
-          latitude: "",
-          longitude: "",
-          bookingSlotsType: "number",
-          specialization: "",
-          orgName: "",
-          location: { lat: 12.9716, lng: 77.5946 },
-          orgAddress: "",
-          clinicGeoLocation: "",
-          serviceType: "",
-          availability: [
-            { day: "Monday", slots: [{ start: "09:00", end: "17:00" }] },
-            { day: "Tuesday", slots: [{ start: "09:00", end: "17:00" }] },
-            { day: "Wednesday", slots: [{ start: "09:00", end: "17:00" }] },
-            { day: "Thursday", slots: [{ start: "09:00", end: "17:00" }] },
-            { day: "Friday", slots: [{ start: "09:00", end: "17:00" }] },
-            { day: "Saturday", slots: [{ start: "09:00", end: "13:00" }] },
-            { day: "Sunday", slots: [] },
-          ],
-        });
-        setSnackbar({
-          open: true,
-          message: "Provider record created successfully!",
-          severity: "success",
-        });
-
-      } else {
-        setErrorMsg(data.message || "Failed to create Provider Account");
-        setSnackbar({
-          open: true,
-          message: data.message || "Failed to create Provider Account",
-          severity: "error",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      setErrorMsg("Server error. Please try again later.");
       setSnackbar({
         open: true,
-        message: "Failed to create Provider Account",
+        message: "Provider record created successfully!",
+        severity: "success",
+      });
+
+    } catch (err: any) {
+      console.error(err);
+
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to create Provider Account";
+
+      setErrorMsg(msg);
+      setSnackbar({
+        open: true,
+        message: msg,
         severity: "error",
       });
     }
