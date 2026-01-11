@@ -111,10 +111,10 @@ export const ProviderRegistration: React.FC = () => {
       //   if (!value.trim()) error = "Specialization is required.";
       //   break;
       case "orgName":
-        if (!value.trim()) error = "Clinic name is required.";
+        if (!value.trim()) error = "Org name is required.";
         break;
       case "orgAddress":
-        if (!value.trim()) error = "Clinic address is required.";
+        if (!value.trim()) error = "Org address is required.";
         break;
       case "bookingSlotsType":
         if (!value) error = "Please select a booking type.";
@@ -330,7 +330,7 @@ export const ProviderRegistration: React.FC = () => {
               <MenuItem value="doctor">Doctor</MenuItem>
               <MenuItem value="lawyer">Lawyer</MenuItem>
               <MenuItem value="pharmacy">Pharmacy</MenuItem>
-              <MenuItem value="saloon">Saloon</MenuItem>
+              <MenuItem value="salon">Salon</MenuItem>
               <MenuItem value="other">Other</MenuItem>
             </Select>
           </FormControl>
@@ -344,8 +344,8 @@ export const ProviderRegistration: React.FC = () => {
             fullWidth
             margin="normal"
           />
-          <TextField label="Clinic Name" name="orgName" value={form.orgName} onChange={handleChange} fullWidth margin="normal" error={!!errors.orgName} helperText={errors.orgName} />
-          <TextField label="Clinic Address" name="orgAddress" value={form.orgAddress} onChange={handleChange} fullWidth margin="normal" error={!!errors.orgAddress} helperText={errors.orgAddress} />
+          <TextField label="Organization Name" name="orgName" value={form.orgName} onChange={handleChange} fullWidth margin="normal" error={!!errors.orgName} helperText={errors.orgName} />
+          <TextField label="Organization Address" name="orgAddress" value={form.orgAddress} onChange={handleChange} fullWidth margin="normal" error={!!errors.orgAddress} helperText={errors.orgAddress} />
           <FormControl fullWidth margin="normal">
             <InputLabel id="booking-type-label">Booking Type</InputLabel>
             <Select

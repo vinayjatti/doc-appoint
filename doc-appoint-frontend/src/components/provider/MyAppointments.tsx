@@ -21,6 +21,8 @@ import { AgGridReact } from "ag-grid-react";
 import { BASE_URL } from "../../utils/constants";
 import { useProviderStore } from "../../store/useProviderStore";
 import { axiosInstance } from "../../utils/AxiosInstance";
+import { seoConfig } from "../seoConfig";
+import SEO from "../home/SEO";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -217,6 +219,7 @@ const MyAppointments: React.FC = () => {
                 borderRadius: 3,
             }}
         >
+            <SEO {...seoConfig.myAppointments} />
             <Typography variant="h5" fontWeight={600} mb={3}>
                 My Appointments
             </Typography>

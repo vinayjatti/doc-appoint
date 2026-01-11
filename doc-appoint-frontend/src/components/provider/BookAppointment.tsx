@@ -21,6 +21,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { BASE_URL } from "../../utils/constants";
 import { axiosInstance } from "../../utils/AxiosInstance";
+import SEO from "../home/SEO";
+import { seoConfig } from "../seoConfig";
 
 // Utility to generate slots
 const generateSlots = (startHour: number, endHour: number, intervalMins: number) => {
@@ -153,6 +155,8 @@ export const BookAppointment: React.FC = () => {
     return (
         <Box sx={{ p: 3 }}>
             {/* Provider Details */}
+            <SEO {...seoConfig.bookAppointment} />
+           
             <Card sx={{ mb: 3, borderRadius: 3, boxShadow: 2 }}>
                 <CardContent>
                     <Typography variant="h6">{provider.name}</Typography>

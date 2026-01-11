@@ -297,7 +297,7 @@ const App: React.FC = () => {
         </Typography>
 
         <Typography variant="body2" sx={{ mt: 1 }}>
-          © {new Date().getFullYear()} AppointmentHub — All Rights Reserved
+          © {new Date().getFullYear()} ReseveYourTime — All Rights Reserved
         </Typography>
       </Box>
     </>

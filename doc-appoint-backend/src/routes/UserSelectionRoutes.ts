@@ -30,7 +30,7 @@ router.post("/user/create", async (req: Request, res: Response) => {
       availability,
     } = req.body;
 
-    if (!name || !phone || !role ) {
+    if (!name || !phone || !role) {
       return res
         .status(400)
         .json({ message: "Name, phone, role, and password are required" });
@@ -89,48 +89,72 @@ router.post("/user/create", async (req: Request, res: Response) => {
  */
 router.get("/user/search", async (req: Request, res: Response) => {
   try {
-    const { latitude, longitude, maxDistance = 5000, role, name, address } =
-      req.query;
+    const {
+      latitude,
+      longitude,
+      role,
+      name,
+      address,
+      serviceType,
+      distanceRange = 5000
+    } = req.query;
 
-    const query: any = {};
+    const DEFAULT_LAT = 12.9716;
+    const DEFAULT_LON = 77.5946;
 
-    // Text search
-    if (name) {
-      query.name = { $regex: new RegExp(name as string, "i") };
-    }
+    const filters: any = {};
 
-    if (address) {
-      query["locationAddress"] = {
-        $regex: new RegExp(address as string, "i"),
-      };
-    }
+    if (name) filters.name = { $regex: new RegExp(name as string, "i") };
+    if (address) filters.locationAddress = { $regex: new RegExp(address as string, "i") };
+    if (serviceType) filters.serviceType = { $regex: new RegExp(serviceType as string, "i") };
+    if (role) filters.role = role;
 
-    // Location search
-    if (latitude && longitude) {
-      const lat = parseFloat(latitude as string);
-      const lon = parseFloat(longitude as string);
+    const lat = latitude ? parseFloat(latitude as string) : DEFAULT_LAT;
+    const lon = longitude ? parseFloat(longitude as string) : DEFAULT_LON;
 
-      query.location = {
-        $near: {
-          $geometry: { type: "Point", coordinates: [lon, lat] },
-          $maxDistance: Number(maxDistance),
+    // Primary distance (UI value)
+    const primaryDistance = serviceType
+      ? parseInt(distanceRange as string)
+      : 50000; // default 50km
+
+    // Function to query MongoDB
+    const runQuery = async (maxDistance: number) => {
+      return User.aggregate([
+        {
+          $geoNear: {
+            near: { type: "Point", coordinates: [lon, lat] },
+            distanceField: "distance",
+            spherical: true,
+            maxDistance
+          }
         },
-      };
+        { $match: filters }
+      ]);
+    };
+
+    // 1️⃣ Try with user-given distance
+    let users = await runQuery(primaryDistance);
+
+    // 2️⃣ If filtering by serviceType AND no results → auto-expand radius to 50km
+    if (serviceType && users.length === 0) {
+      users = await runQuery(50000); // expand to 50 km
     }
 
-    // Filter by role (provider, client, admin)
-    if (role) query.role = role;
-
-    const users = await User.find(query).limit(50);
-
-    if (!users.length) {
+    if (users.length === 0) {
       return res.status(404).json({ message: "No matching users found" });
     }
 
-    return res.status(200).json(users);
+    // Convert meters → KM
+    const finalUsers = users.map((u) => ({
+      ...u,
+      distance: (u.distance / 1000).toFixed(2),
+    }));
+
+    res.status(200).json(finalUsers);
+
   } catch (err) {
     console.error("Error searching users:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

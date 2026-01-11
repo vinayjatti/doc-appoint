@@ -2,6 +2,7 @@ import { BusinessCenter, LocationOn, PersonAdd } from "@mui/icons-material";
 import { Box, Button, Card, CardContent, Grid, Typography } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import SEO from "./SEO";
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -19,10 +20,14 @@ export const Home: React.FC = () => {
         px: 3,
       }}
     >
+      <SEO
+        title="Online Appointment Booking App | Reserve Your Time"
+        description="Reserve Your Time is an online appointment booking app using token-based or time-slot scheduling for clinics, salons, and service providers."
+      />
       {/* Title Section */}
       <Box textAlign="center" mb={5}>
         <Typography variant="h4" fontWeight="bold" color="primary">
-          Welcome to AppointmentHub
+          Welcome to ReseveYourTime
         </Typography>
         <Typography variant="subtitle1" color="text.secondary">
           Your one-stop platform to find service providers and book appointments easily.
